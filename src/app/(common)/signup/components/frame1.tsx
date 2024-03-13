@@ -82,7 +82,7 @@ const Frame1 = (props: {}) => {
                       localStorage.setItem("signuprole", RoleString.CREATOR);
                       router.push(PATH_AUTH.signupInfo);
                     }}
-                    className="mq450:flex-wrap mq450:gap-[16px] box-border flex max-w-full cursor-pointer flex-row items-end justify-start gap-[33px] self-stretch rounded-[7.08px] rounded-[7.08px] border-solid bg-neutral-white px-[33.100000000000364px] pb-6 pt-[23.5px] shadow-[0px_2.4px_16.53px_1.18px_rgba(0,_0,_0,_0.06)] hover:border-[1.2px] hover:border-opacity-100 active:border-opacity-100"
+                    className="mq450:flex-wrap mq450:gap-[16px] box-border flex max-w-full cursor-pointer flex-row items-end justify-start gap-[33px] self-stretch rounded-[7.08px] border-solid bg-neutral-white px-[33.100000000000364px] pb-6 pt-[23.5px] shadow-[0px_2.4px_16.53px_1.18px_rgba(0,_0,_0,_0.06)] hover:border-[1.2px] hover:border-opacity-100 active:border-opacity-100"
                   >
                     <div className="relative hidden h-[127.5px] w-[503px] max-w-full rounded-[7.08px] bg-neutral-white shadow-[0px_2.4px_16.53px_1.18px_rgba(0,_0,_0,_0.06)]" />
                     <div className="flex flex-col items-start justify-start px-0 pb-[9.299999999999727px] pt-0">

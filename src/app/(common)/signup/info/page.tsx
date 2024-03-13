@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import SignUpAuth from "./SignUpAuth";
+import SignUpAuth from "./components/SignUpAuth";
 
 export const metadata: Metadata = {
   title: "Artvista",

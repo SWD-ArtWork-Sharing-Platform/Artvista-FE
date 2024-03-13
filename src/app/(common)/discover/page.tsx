@@ -1,6 +1,5 @@
-import ShopLayout from "@/components/ShopLayout/ShopLayout";
 import { Metadata } from "next";
-import DiscoverProvider from "./pageProvider";
+import DiscoverProvider from "./components/pageProvider";
 
 export const metadata: Metadata = {
   title: "Artvista",

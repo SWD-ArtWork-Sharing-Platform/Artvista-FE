@@ -2,7 +2,7 @@
 import { Watermark } from "antd";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
-import { useMemo, type CSSProperties, useEffect, useState } from "react";
+import { useState } from "react";
 
 export type Cards1Type = {
   artworkId: string;

@@ -1,13 +1,12 @@
 "use client";
-import axios from "axios";
 import ArtworkCard from "./ArtworkCard";
 import { useEffect, useState } from "react";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import useAppContext from "@/hooks/useAppContext";
 import Loading from "@/components/Loading/Loading";
-import artworkMarketApi from "../api/market/artwork";
-import categoryManagementApi from "../api/management/category";
 import { CategoryManagementDTO } from "@/types/management/CategoryManagementDTO";
+import artworkMarketApi from "@/api/market/artwork";
+import categoryManagementApi from "@/api/management/category";
 
 const Discover = (props: {}) => {
   const [artworkList, setArtworkList] = useState<ArtworkDTO[]>([]);
