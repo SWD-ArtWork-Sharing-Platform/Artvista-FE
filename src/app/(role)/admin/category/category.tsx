@@ -298,7 +298,7 @@ const CategoryPage: React.FC = () => {
               onChange={(e) =>
                 setEditedCategory({
                   ...editedCategory,
-                  quantity: e.target.value,
+                  quantity: parseInt(e.target.value),
                 })
               }
             />
@@ -373,7 +373,10 @@ const CategoryPage: React.FC = () => {
               id="quantity"
               value={newCategory.quantity}
               onChange={(e) =>
-                setNewCategory({ ...newCategory, quantity: e.target.value })
+                setNewCategory({
+                  ...newCategory,
+                  quantity: parseInt(e.target.value),
+                })
               }
             />
           </div>
