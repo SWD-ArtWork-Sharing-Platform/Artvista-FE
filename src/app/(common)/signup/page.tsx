@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import Welcomeframe from "./welcomeframe";
-import Frame1 from "./frame1";
+import Welcomeframe from "./components/welcomeframe";
+import Frame1 from "./components/frame1";
 
 export const metadata: Metadata = {
   title: "Artvista",

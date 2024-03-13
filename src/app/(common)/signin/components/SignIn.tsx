@@ -5,7 +5,7 @@ import { Form, Input, Select } from "antd";
 import { useFormik } from "formik";
 import GuestGuard from "@/guards/GuestGuard";
 import useAuth from "@/hooks/useAuth";
-import Welcomeframe from "../signup/welcomeframe";
+import Welcomeframe from "../../signup/components/welcomeframe";
 import FrameComponentSignin from "./frame-component-signin";
 import Loading from "@/components/Loading/Loading";
 import useAppContext from "@/hooks/useAppContext";

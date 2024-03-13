@@ -6,11 +6,25 @@ import sweetAlert from "@/utils/sweetAlert";
 import { getUserInfo } from "@/utils/utils";
 import { Role } from "@/utils/accountRole";
 
+const getLocalStorage = (name: string) => {
+  if (typeof window !== "undefined") {
+    try {
+      const value = localStorage.getItem(name);
+      return value;
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      return null;
+    }
+  } else {
+    console.error("localStorage is not available on the server.");
+    return null;
+  }
+};
+
 const HeaderShopComponent = (props: {}) => {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
-  const accessToken =
-    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  const accessToken = getLocalStorage("accessToken");
   const user = getUserInfo();
   const userLogin = user ? JSON.parse(user) : null;
 

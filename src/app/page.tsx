@@ -8,12 +8,10 @@ const HomePage: React.FC = () => {
   return (
     <>
       <ShopLayout>
-        <div>
-          <Carousel />
-          <TrendingProduct />
-          <TopCreator />
-          <HomeCategories />
-        </div>
+        <Carousel />
+        <TrendingProduct />
+        <TopCreator />
+        <HomeCategories />
       </ShopLayout>
     </>
   );

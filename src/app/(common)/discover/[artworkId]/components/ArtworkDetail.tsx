@@ -1,13 +1,12 @@
 "use client";
-import categoryManagementApi from "@/app/api/management/category";
-import postManagementApi from "@/app/api/management/post";
-import artworkMarketApi from "@/app/api/market/artwork";
+import categoryManagementApi from "@/api/management/category";
+import postManagementApi from "@/api/management/post";
+import artworkMarketApi from "@/api/market/artwork";
 import Loading from "@/components/Loading/Loading";
 import useAppContext from "@/hooks/useAppContext";
 import { PostManagementDTO } from "@/types/management/PostManagementDTO";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import { Watermark } from "antd";
-import axios from "axios";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 

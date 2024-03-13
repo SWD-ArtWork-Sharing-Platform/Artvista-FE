@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import ArtworkDetailProvider from "./ArtworkDetailProvider";
+import ArtworkDetailProvider from "./components/ArtworkDetailProvider";
 
 export const metadata: Metadata = {
   title: "Artvista",
