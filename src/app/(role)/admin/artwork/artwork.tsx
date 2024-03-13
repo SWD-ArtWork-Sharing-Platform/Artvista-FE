@@ -116,7 +116,8 @@ const Artwork: React.FC = () => {
   const handleDelete = async () => {
     try {
       const response = await ArtWorkService.deleteArtworkByID(
-        deleteArtwork?.artworkId ?? ""
+        deleteArtwork?.artworkId ?? "",
+        true
       );
       if (response.isSuccess) {
         fetchArtworks();

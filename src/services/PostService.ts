@@ -19,7 +19,7 @@ export class PostService {
 
     static async getAllPosts(): Promise<ResponseDTO<PostDTO[]>> {
         try {
-            const response = await PostService.axiosInstance.get<ResponseDTO<PostDTO[]>>(`${API_BASE_URL}/api/post/GetAllPost`);
+            const response = await PostService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/post/GetAllPost`);
             return response.data.result;
         } catch (error) {
             console.error('Error fetching all posts:', error);
@@ -29,7 +29,7 @@ export class PostService {
 
     static async getPostByID(id: string): Promise<ResponseDTO<PostDTO>> {
         try {
-            const response = await PostService.axiosInstance.get<ResponseDTO<PostDTO>>(`${API_BASE_URL}/api/post/GetPostByID?id=${id}`);
+            const response = await PostService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/post/GetPostByID?id=${id}`);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching post by ID ${id}:`, error);
@@ -69,7 +69,7 @@ export class PostService {
 
     static async getPostByCondition(title: string, artworkId: string): Promise<ResponseDTO<PostDTO[]>> {
         try {
-            const response = await PostService.axiosInstance.get<ResponseDTO<PostDTO[]>>(`${API_BASE_URL}/api/post/GetPostByCondition?title=${title}&artworkId=${artworkId}`);
+            const response = await PostService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/post/GetPostByCondition?title=${title}&artworkId=${artworkId}`);
             return response.data.result;
         } catch (error) {
             console.error('Error fetching post by condition:', error);
