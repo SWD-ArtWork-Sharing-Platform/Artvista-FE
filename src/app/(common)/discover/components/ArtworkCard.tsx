@@ -1,8 +1,10 @@
 "use client";
+import { PATH_SHOP } from "@/routes/paths";
 import { Watermark } from "antd";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import "./index.css";
 
 export type Cards1Type = {
   artworkId: string;
@@ -36,7 +38,27 @@ const ArtworkCard: NextPage<Cards1Type> = ({
     setIsHovered(false);
   };
 
-  const scalingFactor = isHovered ? 1.2 : 1;
+  const scalingFactor = isHovered ? 1.1 : 1;
+
+  useEffect(() => {
+    const preventF12Key = (event: KeyboardEvent) => {
+      if (event.key === "F12") {
+        event.preventDefault();
+      }
+    };
+
+    const preventContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+    };
+
+    // document.addEventListener("keydown", preventF12Key);
+    // document.addEventListener("contextmenu", preventContextMenu);
+
+    // return () => {
+    //   document.removeEventListener("keydown", preventF12Key);
+    //   document.removeEventListener("contextmenu", preventContextMenu);
+    // };
+  }, []);
 
   return (
     <div
@@ -53,9 +75,11 @@ const ArtworkCard: NextPage<Cards1Type> = ({
         )`,
       }}
       onClick={() => {
-        router.push(`/discover/${artworkId}`);
+        router.push(PATH_SHOP.general.artworkDetail(artworkId));
       }}
-      className="relative mx-1 mb-2 w-[21rem] cursor-pointer overflow-hidden rounded-b-2xl rounded-t-lg"
+      className={`moving-div relative mx-1 mb-2 w-[21rem] cursor-pointer overflow-hidden rounded-b-2xl rounded-t-lg 
+      ${translateYNumber == 1 ? "moving-div-1" : ""}${translateYNumber == 2 ? "moving-div-2" : ""}
+      ${translateYNumber == 3 ? "moving-div-3" : ""}${translateYNumber == 4 ? "moving-div-4" : ""}`}
     >
       <Watermark
         content={"Artvista"}
@@ -79,7 +103,8 @@ const ArtworkCard: NextPage<Cards1Type> = ({
         style={{
           bottom: "-5px",
         }}
-        className=" bg-gray-200 absolute z-[1] mx-0 box-border flex w-full max-w-full flex-col items-center justify-start gap-[0.5rem_0rem] pb-[1.5rem] pl-[1.2rem] pr-[1.2rem] pt-[0.8rem] [backdrop-filter:blur(176.87px)]"
+        className={`bg-gray2-200 absolute z-[1] mx-0 box-border flex w-full max-w-full flex-col items-center justify-start gap-[0.5rem_0rem] pb-[1.5rem] pl-[1.2rem] pr-[1.2rem] pt-[0.8rem]
+        ${isHovered ? "[backdrop-filter:blur(0px)]" : "[backdrop-filter:blur(350px)]"}`}
       >
         <div className="box-border flex w-full max-w-full flex-row items-start justify-start self-stretch">
           <div className=" z-[2] box-border flex max-w-full flex-1 flex-row items-center justify-center py-[0rem] pl-[0.188rem] pr-[0.25rem]">

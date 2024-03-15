@@ -25,9 +25,24 @@ export const getLocalStorage = (name) => {
 };
 
 export const setUserInfo = (userInfo) => {
-  setLocalStorage("USER_INFO", JSON.stringify(userInfo));
+  setLocalStorage(
+    "USER_INFO",
+    JSON.stringify({
+      id: userInfo.id,
+      name: userInfo.name,
+      email: userInfo.email,
+      phoneNumber: userInfo.phoneNumber,
+      role: userInfo.role,
+    })
+  );
 };
 
 export const getUserInfo = () => {
   return getLocalStorage("USER_INFO");
+};
+
+export const getUserInfoId = () => {
+  var userInfoString = getUserInfo();
+  var userInfo = JSON.parse(userInfoString);
+  return userInfo && userInfo.id ? userInfo.id : null;
 };

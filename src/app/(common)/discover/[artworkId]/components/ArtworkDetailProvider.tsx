@@ -12,7 +12,7 @@ const ArtworkDetailProvider = (props: {}) => {
         <AuthProvider>
           <AOSWrapper>
             <ShopLayout>
-              <section>
+              <section className="min-h-screen">
                 <ArtworkDetail />
               </section>
             </ShopLayout>

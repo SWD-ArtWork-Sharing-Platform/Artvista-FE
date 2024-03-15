@@ -1,6 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { PATH_SHOP } from "@/routes/paths";
+import { useRouter } from "next/navigation";
 
 const CarouselContent = (props: {}) => {
+  const router = useRouter();
   return (
     <div className="font-barlow mq1250:flex-wrap flex max-w-full flex-row items-start justify-start gap-[0px_20px] text-left text-91xl text-neutral-white">
       <img
@@ -25,8 +29,13 @@ const CarouselContent = (props: {}) => {
             Digital Arts
           </p>
         </h1>
-        <div className="mq450:text-lgi mq450:leading-[28px] relative inline-block w-[580px] text-5xl leading-[145%] tracking-[0.02em]">{`The world’s largest online marketplace of online digital art `}</div>
-        <b className="mq450:text-base relative cursor-pointer text-xl">
+        <div className=" mq450:text-lgi mq450:leading-[28px] relative inline-block w-[580px] text-5xl leading-[145%] tracking-[0.02em]">{`The world’s largest online marketplace of online digital art `}</div>
+        <b
+          onClick={() => {
+            router.push(PATH_SHOP.general.discover);
+          }}
+          className="header_links_hover mq450:text-base relative cursor-pointer text-xl"
+        >
           Explore More
         </b>
         <div className="mq450:flex-wrap flex w-[388px] max-w-full flex-row items-start justify-between gap-[20px] text-13xl text-whte">
