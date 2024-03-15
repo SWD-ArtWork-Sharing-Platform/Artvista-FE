@@ -14,7 +14,11 @@ export const PATH_AUTH = {
 export const PATH_SHOP = {
   root: "/",
   general: {
-    discover: "/discover"
+    discover: "/discover",
+    artworkDetail: (artworkId: string) => `/discover/${artworkId}`
+  },
+  creator: {
+    visitPage: (creatorId: string) => `/creator/${creatorId}`
   }
 };
 

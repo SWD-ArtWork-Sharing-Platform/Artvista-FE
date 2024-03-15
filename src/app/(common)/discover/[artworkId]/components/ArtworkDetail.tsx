@@ -1,13 +1,17 @@
 "use client";
 import categoryManagementApi from "@/api/management/category";
+import interactionManagementApi from "@/api/management/interaction";
 import postManagementApi from "@/api/management/post";
 import artworkMarketApi from "@/api/market/artwork";
 import Loading from "@/components/Loading/Loading";
 import useAppContext from "@/hooks/useAppContext";
+import { PATH_SHOP } from "@/routes/paths";
+import { InteractionManagementDTO } from "@/types/management/InteractionManagementDTO";
 import { PostManagementDTO } from "@/types/management/PostManagementDTO";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
+import { getUserInfoId } from "@/utils/utils";
 import { Watermark } from "antd";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const ArtworkDetail = (props: {}) => {
@@ -16,7 +20,19 @@ const ArtworkDetail = (props: {}) => {
   const [artworkDetail, setArtworkDetail] = useState<ArtworkDTO | null>(null);
   const [post, setPost] = useState<PostManagementDTO | null>(null);
   const [artworkCategory, setArtworkCategory] = useState<any>(null);
+  const [allInteractionQuantity, setAllInteractionQuantity] =
+    useState<number>(0);
+  const [allInteractionList, setAllInteractionList] = useState<
+    InteractionManagementDTO[]
+  >([]);
+  const [interactionOfPost, setInteractionOfPost] = useState<
+    InteractionManagementDTO[]
+  >([]);
+  const [interactionOfUser, setInteractionOfUser] = useState<
+    InteractionManagementDTO[] | null
+  >(null);
   const { isLoading, enableLoading, disableLoading } = useAppContext();
+  const router = useRouter();
   console.log(artworkDetail, post, artworkCategory, new Date().toISOString());
 
   const renderArtworkDetail = () => {
@@ -28,31 +44,6 @@ const ArtworkDetail = (props: {}) => {
           setArtworkDetail(
             response.data.result.filter(
               (artwork: ArtworkDTO) => artwork.artworkId == artworkId
-            )[0]
-          );
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-      .finally(() => {
-        //disableLoading();
-      });
-  };
-
-  const renderPost = () => {
-    postManagementApi
-      .getAllPost()
-      .then((response) => {
-        if (
-          response.data.isSuccess &&
-          response.data.result &&
-          response.data.result.isSuccess &&
-          response.data.result.result
-        ) {
-          setPost(
-            response.data.result.result.filter(
-              (post: PostManagementDTO) => post?.artworkId == artworkId
             )[0]
           );
         }
@@ -71,7 +62,6 @@ const ArtworkDetail = (props: {}) => {
           response.data.result &&
           response.data.result.isSuccess
         ) {
-          console.log(response);
           if (artworkDetail != null) {
             setArtworkCategory(
               response.data.result.result.filter(
@@ -88,6 +78,130 @@ const ArtworkDetail = (props: {}) => {
       .finally(() => {
         disableLoading();
       });
+  };
+
+  const getAllInteractionQuantity = () => {
+    interactionManagementApi
+      .getAllInteraction()
+      .then((response) => {
+        if (
+          response.data.isSuccess &&
+          response.data.result &&
+          response.data.result.isSuccess
+        ) {
+          setAllInteractionList(response.data.result.result);
+          setAllInteractionQuantity(response.data.result.result.length);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getInteractionOfPost = (postId: string) => {
+    interactionManagementApi
+      .getInteractionByPostID(postId)
+      .then((response) => {
+        if (
+          response.data.isSuccess &&
+          response.data.result &&
+          response.data.result.isSuccess
+        ) {
+          setInteractionOfPost(response.data.result.result);
+
+          var userId = getUserInfoId();
+          if (userId) {
+            setInteractionOfUser(
+              response.data.result.result.filter(
+                (x: any) => (x.id = userId && (x.like > 0 || x.comments != ""))
+              )
+            );
+          }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        getAllInteractionQuantity();
+      });
+  };
+
+  const renderPost = () => {
+    var postId = "";
+    postManagementApi
+      .getAllPost()
+      .then((response) => {
+        if (
+          response.data.isSuccess &&
+          response.data.result &&
+          response.data.result.isSuccess &&
+          response.data.result.result
+        ) {
+          var post = response.data.result.result.filter(
+            (post: PostManagementDTO) => post?.artworkId == artworkId
+          )[0];
+          setPost(post);
+          postId = post.postId;
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        getInteractionOfPost(postId);
+        disableLoading();
+      });
+  };
+
+  const handleLikePost = () => {
+    enableLoading();
+    var interactionList = [...allInteractionList];
+    const id = (
+      parseInt(
+        interactionList.reduce((max, current) =>
+          max.id > current.id ? max : current
+        ).interactionId
+      ) + 1
+    ).toString();
+
+    interactionManagementApi
+      .createInteraction(
+        id,
+        getUserInfoId(),
+        new Date().toISOString(),
+        1,
+        "",
+        post ? post.postId : ""
+      )
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        renderPost();
+      });
+  };
+
+  const handleUnLikePost = () => {
+    enableLoading();
+
+    if (interactionOfUser?.filter((x) => x.like > 0)[0]) {
+      var interaction = interactionOfUser?.filter((x) => x.like > 0)[0];
+      interactionManagementApi
+        .deleteInteraction(interaction.interactionId)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          renderPost();
+        });
+    }
   };
 
   useEffect(() => {
@@ -121,11 +235,27 @@ const ArtworkDetail = (props: {}) => {
             <div className="mq750:flex-wrap flex w-[33.875rem] max-w-full flex-row items-start justify-between gap-[1.25rem]">
               <div className="flex flex-row items-start justify-start gap-[0rem_0.25rem]">
                 <div className="relative leading-[1.313rem]">by</div>
-                <div className="relative capitalize leading-[1.313rem] text-primary-colour">
+                <div
+                  className="relative capitalize leading-[1.313rem] text-primary-colour cursor-pointer"
+                  onClick={() => {
+                    router.push(
+                      PATH_SHOP.creator.visitPage(artworkDetail.creator.id)
+                    );
+                  }}
+                >
                   {artworkDetail.creator.name}
                 </div>
                 <div className="relative leading-[1.313rem]">in</div>
-                <div className="relative leading-[1.313rem] text-primary-colour">
+                <div
+                  className="relative leading-[1.313rem] text-primary-colour cursor-pointer"
+                  onClick={() => {
+                    localStorage.setItem(
+                      "DISCOVER_CATEGORY_SORT",
+                      artworkDetail.categoryID
+                    );
+                    router.push(PATH_SHOP.general.discover);
+                  }}
+                >
                   {artworkCategory.categoryName}
                 </div>
               </div>
@@ -158,12 +288,31 @@ const ArtworkDetail = (props: {}) => {
                 className="Artwork Name
                 box-border flex h-[38.813rem] max-w-full flex-row items-start justify-end self-stretch rounded-xl bg-cover bg-[top] bg-no-repeat px-[1.75rem] py-[1.875rem]"
               >
-                <div className="z-[1] box-border flex h-[2.688rem] w-[5.438rem] cursor-pointer flex-row items-center justify-center rounded-full border-[1px] border-solid border-dimgray-100 bg-neutral-white py-[0.625rem] pl-[1.125rem] pr-[1.375rem]">
+                <div
+                  onClick={() => {
+                    if (
+                      interactionOfUser &&
+                      interactionOfUser?.filter((x) => x.like > 0).length > 0
+                    ) {
+                      handleUnLikePost();
+                    } else {
+                      handleLikePost();
+                    }
+                  }}
+                  style={{
+                    backgroundColor: `${interactionOfUser && interactionOfUser?.filter((x) => x.like > 0).length > 0 ? "#a259ff" : ""}`,
+                    border: `${interactionOfUser && interactionOfUser?.filter((x) => x.like > 0).length > 0 ? "none" : ""}`,
+                    color: `${interactionOfUser && interactionOfUser?.filter((x) => x.like > 0).length > 0 ? "#fff" : ""}`,
+                  }}
+                  className="z-[1] box-border flex h-[2.688rem] w-[5.438rem] cursor-pointer flex-row items-center justify-center rounded-full border-[1px] border-solid border-dimgray-100 bg-neutral-white py-[0.625rem] pl-[1.125rem] pr-[1.375rem]"
+                >
                   <div className="flex flex-col items-start justify-start px-[0rem] pb-[0rem] pt-[0.094rem]">
-                    <div className="relative mr-1">♡</div>
+                    <div className="relative mx-1">♡</div>
                   </div>
-                  <b className="font-text-labels-14px-bold relative text-left text-[0.875rem] leading-[1.313rem]">
-                    68
+                  <b className="font-text-labels-14px-bold relative text-left text-[0.875rem] leading-[1.313rem] mx-1">
+                    {interactionOfPost && interactionOfPost.length > 0
+                      ? interactionOfPost.length
+                      : "0"}
                   </b>
                 </div>
               </div>
@@ -219,13 +368,27 @@ const ArtworkDetail = (props: {}) => {
                 CATEGORY
               </div>
               <div className="flex flex-col items-start justify-start gap-[0.5rem_0rem] self-stretch">
-                <div className="mq750:flex-wrap flex flex-row items-start justify-start gap-[0rem_1.125rem] self-stretch">
-                  <button className="hover:bg-silver-300 flex cursor-pointer flex-col items-start justify-start rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem] [border:none]">
+                <div className="mq750:flex-wrap flex flex-row items-start justify-start gap-[0rem_0.75rem] self-stretch">
+                  <button
+                    onClick={() => {
+                      localStorage.setItem(
+                        "DISCOVER_CATEGORY_SORT",
+                        artworkDetail.categoryID
+                      );
+                      router.push(PATH_SHOP.general.discover);
+                    }}
+                    className="hover:bg-silver-300 flex cursor-pointer flex-col items-start justify-start rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem] [border:none]"
+                  >
                     <b className="font-barlow text-bg relative text-left text-[0.75rem] leading-[1.125rem]">
                       {artworkCategory.categoryName}
                     </b>
                   </button>
-                  <button className="flex cursor-pointer flex-row items-start justify-start bg-[transparent] p-0 [border:none]">
+                  <button
+                    onClick={() => {
+                      router.push(PATH_SHOP.general.discover);
+                    }}
+                    className="flex cursor-pointer flex-row items-start justify-start bg-[transparent] p-0 [border:none]"
+                  >
                     <div className="flex flex-col items-start justify-start whitespace-nowrap rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem]">
                       <b className="font-barlow relative text-left text-[0.75rem] leading-[1.125rem] text-grey">
                         See more..

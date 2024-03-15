@@ -5,6 +5,7 @@ import useAuth from "@/hooks/useAuth";
 import sweetAlert from "@/utils/sweetAlert";
 import { getUserInfo } from "@/utils/utils";
 import { Role } from "@/utils/accountRole";
+import "./index.css";
 
 const getLocalStorage = (name: string) => {
   if (typeof window !== "undefined") {
@@ -31,17 +32,17 @@ const HeaderShopComponent = (props: {}) => {
   return (
     <header className="mt-2 font-barlow mq450:gap-[0px_233px] mq750:gap-[0px_233px] mq1250:gap-[0px_233px] sticky top-[0] z-[99] flex w-10/12 max-w-full flex-row items-center justify-start gap-[0px_233px] pt-[10px] text-left text-21xl text-neutral-white">
       <h1
-        className="font-inherit relative m-0 cursor-pointer whitespace-nowrap text-inherit font-bold"
+        className="header_title font-inherit relative m-0 cursor-pointer whitespace-nowrap text-inherit font-bold"
         onClick={() => {
           router.push("/");
         }}
       >
         Artvista
       </h1>
-      <div className="flex max-w-full flex-1 flex-row items-center justify-between gap-[20px] text-3xl text-whte">
-        <div className="mq450:gap-[0px_63px] mq1100:hidden flex max-w-full flex-row items-start justify-center gap-[0px_63px]">
+      <div className="flex max-w-full flex-1 flex-row items-center justify-end gap-[20px] text-3xl text-whte">
+        <div className="flex flex-row">
           <div
-            className="relative cursor-pointer font-semibold"
+            className="relative cursor-pointer font-semibold mr-7 header_links_hover"
             onClick={() => {
               router.push(PATH_SHOP.general.discover);
             }}
@@ -54,7 +55,7 @@ const HeaderShopComponent = (props: {}) => {
           userLogin.role.filter((role: any) => role == Role.ADMIN)[0] ? (
             <>
               <div
-                className="relative cursor-pointer font-semibold"
+                className="relative cursor-pointer font-semibold mr-7 header_links_hover"
                 onClick={() => {
                   router.push(PATH_ADMIN.dashboard);
                 }}
@@ -65,12 +66,10 @@ const HeaderShopComponent = (props: {}) => {
           ) : (
             <></>
           )}
-        </div>
-        <div className="flex flex-row">
           {!isAuthenticated && !accessToken ? (
             <>
               <div
-                className="flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
+                className="flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
                 onClick={() => {
                   router.push(PATH_AUTH.signup);
                 }}
@@ -80,7 +79,7 @@ const HeaderShopComponent = (props: {}) => {
                 </div>
               </div>
               <div
-                className="ms-4 flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
+                className="ms-6 flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
                 onClick={() => {
                   router.push(PATH_AUTH.signin);
                 }}
@@ -93,7 +92,7 @@ const HeaderShopComponent = (props: {}) => {
           ) : (
             <>
               <div
-                className="flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
+                className="header_btn_hover flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
                 onClick={() => {
                   logout();
                   sweetAlert.alertSuccess("Log Out Successfully", "", 1000, 22);
