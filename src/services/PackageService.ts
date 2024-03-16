@@ -19,7 +19,7 @@ export class PackageService {
 
     static async getAllPackages(): Promise<ResponseDTO<PackageDTO[]>> {
         try {
-            const response = await PackageService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/package/GetAllPackage`);
+            const response = await PackageService.axiosInstance.get<ResponseDTO<PackageDTO[]>>(`${API_BASE_URL}/api/package/GetAllPackage`);
             return response.data.result;
         } catch (error) {
             console.error('Error fetching all packages:', error);
@@ -29,7 +29,7 @@ export class PackageService {
 
     static async getPackageByID(id: string): Promise<ResponseDTO<PackageDTO>> {
         try {
-            const response = await PackageService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/package/GetPackageByID?id=${id}`);
+            const response = await PackageService.axiosInstance.get<ResponseDTO<PackageDTO>>(`${API_BASE_URL}/api/package/GetPackageByID?id=${id}`);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching package by ID ${id}:`, error);
@@ -39,7 +39,7 @@ export class PackageService {
 
     static async createNewPackage(packageData: PackageDTO): Promise<ResponseDTO<PackageDTO>> {
         try {
-            const response = await PackageService.axiosInstance.post<ResponseDTO<any>>(`${API_BASE_URL}/api/package/CreatePackage`, packageData);
+            const response = await PackageService.axiosInstance.post<ResponseDTO<PackageDTO>>(`${API_BASE_URL}/api/package/CreatePackage`, packageData);
             return response.data.result;
         } catch (error) {
             console.error('Error creating new package:', error);
@@ -49,7 +49,7 @@ export class PackageService {
 
     static async updatePackage(packageData: PackageDTO): Promise<ResponseDTO<PackageDTO>> {
         try {
-            const response = await PackageService.axiosInstance.put<ResponseDTO<any>>(`${API_BASE_URL}/api/package/UpdatePackage`, packageData);
+            const response = await PackageService.axiosInstance.put<ResponseDTO<PackageDTO>>(`${API_BASE_URL}/api/package/UpdatePackage`, packageData);
             return response.data.result;
         } catch (error) {
             console.error(`Error updating package with ID ${packageData.packageId}:`, error);
@@ -59,7 +59,7 @@ export class PackageService {
 
     static async deletePackageByID(id: string, confirm: boolean): Promise<ResponseDTO<PackageDTO>> {
         try {
-            const response = await PackageService.axiosInstance.delete<ResponseDTO<any>>(`${API_BASE_URL}/api/package/DeletePackage`, {
+            const response = await PackageService.axiosInstance.delete<ResponseDTO<PackageDTO>>(`${API_BASE_URL}/api/package/DeletePackage`, {
                 params: { id, confirm },
             });
             return response.data.result;

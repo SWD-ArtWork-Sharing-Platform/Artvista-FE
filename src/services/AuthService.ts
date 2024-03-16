@@ -2,14 +2,14 @@ import { API_AUTH_URL } from '@/config/apiConfig';
 
 export class AuthService {
     static getToken(): string | null {
-        return localStorage.getItem('accessToken');
+        return localStorage.getItem('token');
     }
 
     static setToken(token: string): void {
-        localStorage.setItem('accessToken', token);
+        localStorage.setItem('token', token);
     }
 
     static removeToken(): void {
-        localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
     }
 }
