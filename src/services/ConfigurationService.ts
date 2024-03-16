@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import { API_BASE_URL } from '@/config/apiConfig';
 import { ResponseDTO } from '@/models/ResponseDTO';
 import { ConfigurationDTO } from '@/models/ConfigurationDTO';
