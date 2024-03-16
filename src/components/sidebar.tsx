@@ -39,5 +39,5 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem }) => {
         </Nav>
     );
 };
-
+//update sidebar
 export default Sidebar;
