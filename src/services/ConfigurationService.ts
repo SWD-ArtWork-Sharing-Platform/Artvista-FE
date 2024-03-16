@@ -68,5 +68,5 @@ export class ConfigurationService {
     }
 }
 
-// Initialize the ConfigurationService to automatically set the Bearer token
+// Initialize the  ConfigurationService to automatically set the Bearer token
 ConfigurationService.initialize();
