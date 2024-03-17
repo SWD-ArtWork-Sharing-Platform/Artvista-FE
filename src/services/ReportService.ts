@@ -27,4 +27,3 @@ export class ReportService {
         }
     }
 }
-// Initialize the ReportService to automatically set the Bearer token
