@@ -9,7 +9,7 @@ import { getUserAvatar } from "@/utils/useFirebaseStorage";
 
 export type Cards1Type = {
   artworkId: string;
-  maskGroup?: Promise<string> | string;
+  maskGroup?: string;
   logoFrame?: string;
   price?: number;
   discount?: number;

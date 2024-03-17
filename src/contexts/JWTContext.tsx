@@ -117,6 +117,16 @@ function AuthProvider({ children }: { children: ReactNode }) {
             },
           });
         } else {
+          if (accessToken && !isValidToken(accessToken)) {
+            logout();
+            sweetAlert.alertInfo(
+              "Sesstion Timeout",
+              "You need to sign in again...",
+              5000,
+              25
+            );
+          }
+
           dispatch({
             type: Types.Initial,
             payload: {
@@ -143,64 +153,71 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string) => {
     try {
       enableLoading();
-      const response = await axiosInstances.auth.post("/auth/login", {
-        username,
-        password,
-      });
+      const response = await axiosInstances.auth
+        .post("/auth/login", {
+          username,
+          password,
+        })
+        .then((response) => {
+          if (
+            response.data.isSuccess &&
+            response.data.result != null &&
+            response.data.result.user != null
+          ) {
+            const { id, name, email, phoneNumber, role } =
+              response.data.result.user;
 
-      if (
-        response.data.isSuccess &&
-        response.data.result != null &&
-        response.data.result.user != null
-      ) {
-        const { id, name, email, phoneNumber, role } =
-          response.data.result.user;
+            const user = {
+              id: id,
+              name: name,
+              email: email,
+              phoneNumber: phoneNumber,
+              role: role,
+            };
 
-        const user = {
-          id: id,
-          name: name,
-          email: email,
-          phoneNumber: phoneNumber,
-          role: role,
-        };
+            const accessToken = response.data.result.token;
 
-        const accessToken = response.data.result.token;
+            setSession(accessToken);
+            setUserInfo(user);
 
-        setSession(accessToken);
-        setUserInfo(user);
-
-        dispatch({
-          type: Types.Login,
-          payload: {
-            user,
-          },
+            dispatch({
+              type: Types.Login,
+              payload: {
+                user,
+              },
+            });
+            router.push("/");
+            disableLoading();
+          } else {
+            disableLoading();
+            sweetAlert.alertFailed(
+              `Login failed.`,
+              ` Please check your email and password and try again.`,
+              1200,
+              20
+            );
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          disableLoading();
+          sweetAlert.alertFailed(
+            `Login failed.`,
+            ` Please check your email and password and try again.`,
+            4000,
+            22
+          );
+          router.push(PATH_AUTH.signin);
+        })
+        .finally(() => {
+          if (getUserInfo()) {
+            setTimeout(() => {
+              sweetAlert.alertSuccess("Sign In Successfully", "", 1200, 20);
+            }, 200);
+          }
         });
-
-        disableLoading();
-        sweetAlert.alertSuccess("Sign In Successfully", "", 1200, 20);
-
-        if (user.role && user.role[0].toUpperCase() == Role.ADMIN) {
-          router.push(PATH_ADMIN.dashboard);
-        } else if (user.role && user.role[0].toUpperCase() == Role.MODERATOR) {
-          // push tới page của moderator
-          router.push("/");
-        } else if (user.role && user.role[0].toUpperCase() == Role.CUSTOMER) {
-          router.push("/");
-        } else if (user.role && user.role[0].toUpperCase() == Role.CREATOR) {
-          router.push("/");
-        }
-      } else {
-        disableLoading();
-        sweetAlert.alertFailed(
-          `Login failed.`,
-          ` Please check your email and password and try again.`,
-          1200,
-          20
-        );
-      }
     } catch (error) {
       console.log(error);
-
       disableLoading();
       sweetAlert.alertFailed(
         `Login failed.`,

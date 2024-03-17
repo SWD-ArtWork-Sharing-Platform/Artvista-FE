@@ -9,7 +9,7 @@ const isValidToken = (accessToken: string): boolean => {
   try {
     const decoded: JwtPayload = jwtDecode(accessToken);
     const currentTime = Math.floor(Date.now() / 1000);
-console.log(decoded.exp, currentTime);
+    console.log(decoded, decoded.exp, currentTime);
 
     return decoded.exp !== undefined && decoded.exp > currentTime;
   } catch (error) {
