@@ -11,9 +11,10 @@ import { NextPage } from "next";
 
 export type DiscoverType = {
   numberOfItems?: number;
+  creatorId?: string;
 };
 
-const Discover: NextPage<DiscoverType> = ({ numberOfItems }) => {
+const Discover: NextPage<DiscoverType> = ({ numberOfItems, creatorId }) => {
   const [artworkList, setArtworkList] = useState<ArtworkDTO[]>([]);
   const [displayArtworkList, setDisplayArtworkList] = useState<ArtworkDTO[]>(
     []
@@ -198,33 +199,39 @@ const Discover: NextPage<DiscoverType> = ({ numberOfItems }) => {
                   />
                 </div>
 
-                <div className="rounded-10xs border-gray-600 box-border flex min-w-[10.5rem] max-w-full flex-1 flex-row items-start justify-start gap-[0rem_1.563rem] overflow-hidden border-[1px] border-solid px-[1.188rem] py-[0.4rem]">
-                  <img
-                    className="relative h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 cursor-pointer overflow-hidden"
-                    alt=""
-                    src="/images/shop/DiscoverPage/search.svg"
-                    onClick={() => {
-                      setPerformSearchKey(true);
-                      handleSearch();
-                    }}
-                  />
-                  <input
-                    className="font-barlow text-gray-500 box-border flex h-[1.344rem] w-full flex-col items-start justify-start bg-[transparent] px-[0rem] pb-[0rem] pt-[0.156rem] text-[1rem] leading-[160.5%] text-neutral-white [border:none] [outline:none]"
-                    placeholder="Search by creator name"
-                    type="text"
-                    value={searchCreatorName}
-                    onChange={(e) => {
-                      setPerformSearchKey(false);
-                      handleChangeSearchCreatorName(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        setPerformSearchKey(true);
-                        handleSearch();
-                      }
-                    }}
-                  />
-                </div>
+                {!creatorId ? (
+                  <>
+                    <div className="rounded-10xs border-gray-600 box-border flex min-w-[10.5rem] max-w-full flex-1 flex-row items-start justify-start gap-[0rem_1.563rem] overflow-hidden border-[1px] border-solid px-[1.188rem] py-[0.4rem]">
+                      <img
+                        className="relative h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 cursor-pointer overflow-hidden"
+                        alt=""
+                        src="/images/shop/DiscoverPage/search.svg"
+                        onClick={() => {
+                          setPerformSearchKey(true);
+                          handleSearch();
+                        }}
+                      />
+                      <input
+                        className="font-barlow text-gray-500 box-border flex h-[1.344rem] w-full flex-col items-start justify-start bg-[transparent] px-[0rem] pb-[0rem] pt-[0.156rem] text-[1rem] leading-[160.5%] text-neutral-white [border:none] [outline:none]"
+                        placeholder="Search by creator name"
+                        type="text"
+                        value={searchCreatorName}
+                        onChange={(e) => {
+                          setPerformSearchKey(false);
+                          handleChangeSearchCreatorName(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            setPerformSearchKey(true);
+                            handleSearch();
+                          }
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <></>
+                )}
 
                 {searchMessage != "" ? (
                   <div
@@ -297,6 +304,12 @@ const Discover: NextPage<DiscoverType> = ({ numberOfItems }) => {
           <div className="min-w-full mq800:gap-[0rem_2.25rem] mq450:gap-[0rem_1.125rem] flex max-w-full flex-row flex-wrap items-start justify-start gap-[0rem_4.563rem]  text-center text-[1.25rem]">
             <div className="mt-5 flex max-w-full flex-row flex-wrap items-start justify-start gap-[1rem_1rem]  pl-[3rem] text-whitesmoke">
               {displayArtworkList
+                .filter((a) => {
+                  if (creatorId) {
+                    return a.creator.id == creatorId;
+                  }
+                  return true;
+                })
                 .sort((a, b) => {
                   if (sortedPrice == sortedPriceOptions[0].value) {
                     return -1;
@@ -339,7 +352,11 @@ const Discover: NextPage<DiscoverType> = ({ numberOfItems }) => {
                       price={artwork.price}
                       discount={artwork.discount}
                       translateYNumber={
-                        numberOfItems ? index + 11 : (index % 4) + 1
+                        creatorId
+                          ? 20
+                          : numberOfItems
+                            ? index + 11
+                            : (index % 4) + 1
                       }
                     />
                   );

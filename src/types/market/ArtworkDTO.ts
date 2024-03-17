@@ -17,5 +17,6 @@ export type ArtworkDTO = {
     categoryId: string,
     imageUrl: string,
     image: any,
+    imageLocalPath?: string,
     category: any
 }

@@ -5,13 +5,14 @@ import interactionManagementApi from "@/api/management/interaction";
 import postManagementApi from "@/api/management/post";
 import artworkMarketApi from "@/api/market/artwork";
 import Loading from "@/components/Loading/Loading";
+import { Role } from "@/enums/accountRole";
 import useAppContext from "@/hooks/useAppContext";
-import { PATH_SHOP } from "@/routes/paths";
+import { PATH_CREATOR, PATH_SHOP } from "@/routes/paths";
 import { InteractionManagementDTO } from "@/types/management/InteractionManagementDTO";
 import { PostManagementDTO } from "@/types/management/PostManagementDTO";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import { formatDate_YYYY_MMMM_DD } from "@/utils/formatDate";
-import { getUserInfoId } from "@/utils/utils";
+import { getUserInfo, getUserInfoId } from "@/utils/utils";
 import { Watermark } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -404,32 +405,74 @@ const ArtworkDetail = (props: {}) => {
               <div className="relative inline-block w-[26.5rem] max-w-full font-medium capitalize leading-[1.313rem]">
                 {post.description}
               </div>
-              <button
-                onClick={() => {}}
-                className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]"
-              >
-                <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-neutral-white">
-                  Purchase Now
-                </div>
-              </button>
-              <button
-                onClick={() => {}}
-                className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
-              >
-                <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
-                  Add To Wishlist
-                </div>
-              </button>
-              <button
-                onClick={() => {
-                  enableChattingOfCustomer(artworkDetail.creator.id, artworkId);
-                }}
-                className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-white bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
-              >
-                <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-white">
-                  Chat With Creator
-                </div>
-              </button>
+              {getUserInfoId() != artworkDetail.creator.id &&
+              JSON.parse(getUserInfo() ?? "").role.filter(
+                (r: any) => r == Role.CUSTOMER
+              ) ? (
+                <>
+                  <button
+                    onClick={() => {}}
+                    className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]"
+                  >
+                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-neutral-white">
+                      Purchase Now
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {}}
+                    className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                  >
+                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
+                      Add To Wishlist
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {
+                      enableChattingOfCustomer(
+                        artworkDetail.creator.id,
+                        artworkId
+                      );
+                    }}
+                    className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-white bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                  >
+                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-white">
+                      Chat With Creator
+                    </div>
+                  </button>
+                </>
+              ) : (
+                <></>
+              )}
+
+              {getUserInfoId() == artworkDetail.creator.id ? (
+                <>
+                  <button
+                    onClick={() => {
+                      router.push(
+                        PATH_CREATOR.editArtwork(
+                          artworkDetail.creator.id,
+                          artworkDetail.artworkId
+                        )
+                      );
+                    }}
+                    className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]"
+                  >
+                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-neutral-white">
+                      Edit Artwork
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => {}}
+                    className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-danger bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                  >
+                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-danger">
+                      Delete Artwork
+                    </div>
+                  </button>
+                </>
+              ) : (
+                <></>
+              )}
             </div>
             {artworkCategory ? (
               <>
