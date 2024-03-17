@@ -11,7 +11,7 @@ const DiscoverProvider = (props: {}) => {
         <AOSWrapper>
           <ShopLayout>
             <section>
-              <Discover />
+              <Discover numberOfItems={undefined} />
             </section>
           </ShopLayout>
         </AOSWrapper>

@@ -7,8 +7,14 @@ import Loading from "@/components/Loading/Loading";
 import { CategoryManagementDTO } from "@/types/management/CategoryManagementDTO";
 import artworkMarketApi from "@/api/market/artwork";
 import categoryManagementApi from "@/api/management/category";
+import { NextPage } from "next";
 
-const Discover = (props: {}) => {
+export type DiscoverType = {
+  numberOfItems?: number;
+  creatorId?: string;
+};
+
+const Discover: NextPage<DiscoverType> = ({ numberOfItems, creatorId }) => {
   const [artworkList, setArtworkList] = useState<ArtworkDTO[]>([]);
   const [displayArtworkList, setDisplayArtworkList] = useState<ArtworkDTO[]>(
     []
@@ -28,7 +34,7 @@ const Discover = (props: {}) => {
     { value: "lowtohigh", name: "Low to high" },
     { value: "hightolow", name: "High to low" },
   ];
-  console.log(artworkList, displayArtworkList);
+  // console.log(artworkList, displayArtworkList);
 
   const renderArtwork = (
     searchkey: string = "",
@@ -150,132 +156,160 @@ const Discover = (props: {}) => {
 
   return (
     <>
-      <Loading loading={isLoading} />
-      <div className="min-w-full text-bg font-barlow mq800:gap-[2.688rem_0rem] mq450:gap-[1.375rem_0rem] flex max-w-full flex-1 flex-col items-end justify-start gap-[5.438rem_0rem] text-left text-[1.5rem]">
+      {!numberOfItems ? (
+        <>
+          <Loading loading={isLoading} />
+        </>
+      ) : (
+        <></>
+      )}
+
+      <div
+        className={`min-w-full text-bg font-barlow flex max-w-full flex-1 flex-col items-end justify-start ${numberOfItems ? "gap-[0rem_0rem]" : "gap-[5.438rem_0rem]"} text-left text-[1.5rem]`}
+      >
         <div className="flex min-w-full max-w-full flex-col items-end justify-start gap-[0.625rem_0rem]">
-          <div className="min-w-full mq1150:flex-wrap flex max-w-full flex-row items-end justify-start gap-[0rem_0.875rem] px-25">
-            <div className="rounded-10xs border-gray-600 box-border flex min-w-[10.5rem] max-w-full flex-1 flex-row items-start justify-start gap-[0rem_1.563rem] overflow-hidden border-[1px] border-solid px-[1.188rem] py-[0.4rem]">
-              <img
-                className="relative h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 cursor-pointer overflow-hidden"
-                alt=""
-                src="/images/shop/DiscoverPage/search.svg"
-                onClick={() => {
-                  setPerformSearchKey(true);
-                  handleSearch();
-                }}
-              />
-              <input
-                className="font-barlow text-gray-500 box-border flex h-[1.344rem] w-full flex-col items-start justify-start bg-[transparent] px-[0rem] pb-[0rem] pt-[0.156rem] text-[1rem] leading-[160.5%] text-neutral-white [border:none] [outline:none]"
-                placeholder="Search by artwork name"
-                type="text"
-                value={searchKey}
-                onChange={(e) => {
-                  setPerformSearchKey(false);
-                  handleChangeSearchKey(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setPerformSearchKey(true);
-                    handleSearch();
-                  }
-                }}
-              />
-            </div>
-
-            <div className="rounded-10xs border-gray-600 box-border flex min-w-[10.5rem] max-w-full flex-1 flex-row items-start justify-start gap-[0rem_1.563rem] overflow-hidden border-[1px] border-solid px-[1.188rem] py-[0.4rem]">
-              <img
-                className="relative h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 cursor-pointer overflow-hidden"
-                alt=""
-                src="/images/shop/DiscoverPage/search.svg"
-                onClick={() => {
-                  setPerformSearchKey(true);
-                  handleSearch();
-                }}
-              />
-              <input
-                className="font-barlow text-gray-500 box-border flex h-[1.344rem] w-full flex-col items-start justify-start bg-[transparent] px-[0rem] pb-[0rem] pt-[0.156rem] text-[1rem] leading-[160.5%] text-neutral-white [border:none] [outline:none]"
-                placeholder="Search by creator name"
-                type="text"
-                value={searchCreatorName}
-                onChange={(e) => {
-                  setPerformSearchKey(false);
-                  handleChangeSearchCreatorName(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setPerformSearchKey(true);
-                    handleSearch();
-                  }
-                }}
-              />
-            </div>
-
-            {searchMessage != "" ? (
-              <div
-                onClick={() => {
-                  setSearchCreatorName("");
-                  setSearchKey("");
-                  setSearchMessage("");
-                  renderArtwork();
-                }}
-                className="cursor-pointer rounded-full text-black fw-bolder bg-white text-[1rem] flex max-w-full flex-row items-center justify-center overflow-hidden border-[0px] px-[1.5rem] py-[0.4rem]"
-              >
-                Clear Search
-              </div>
-            ) : (
-              <></>
-            )}
-
-            <div>
-              <p className="mb-1 text-[1.1rem] text-white">Price</p>
-              <div className="rounded-10xs border-gray-600 relative flex min-w-[8rem] cursor-pointer flex-row items-start justify-center gap-[0rem_0.625rem] overflow-hidden border-[1px] border-solid bg-[transparent] px-[1rem] py-[0.469rem] text-[1rem]">
-                <select
-                  value={sortedPrice}
-                  className="relative cursor-pointer overflow-hidden border-0 bg-[transparent] text-[1rem]"
-                  onChange={(e) => {
-                    setSortedPrice(e.target.value);
-                  }}
-                >
-                  {sortedPriceOptions.map((option, index) => (
-                    <option key={index} value={option.value}>
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-1 text-[1.1rem] text-white">Category</p>
-              <div className="rounded-10xs border-gray-600 relative flex min-w-[8rem] cursor-pointer flex-row items-start justify-center gap-[0rem_0.625rem] overflow-hidden border-[1px] border-solid bg-[transparent] px-[1rem] py-[0.469rem] text-[1rem]">
-                <select
-                  value={searchCateId}
-                  className="relative w-full cursor-pointer overflow-hidden border-0 bg-[transparent] text-[1rem]"
-                  onChange={(e) => {
-                    setSearchCateId(e.target.value);
-                  }}
-                >
-                  {searchCateIdOptions.map((option, index) => (
-                    <option key={index} value={option.categoryId}>
-                      {option.categoryName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-          {searchMessage != "" ? (
+          {!numberOfItems ? (
             <>
-              <div className="min-w-full mq1150:flex-wrap flex max-w-full flex-row items-start justify-start gap-[0rem_0.875rem]  px-25">
-                <h1 className="text-[1.2rem]">{searchMessage}</h1>
+              <div className="min-w-full mq1150:flex-wrap flex max-w-full flex-row items-end justify-start gap-[0rem_0.875rem] px-25">
+                <div className="rounded-10xs border-gray-600 box-border flex min-w-[10.5rem] max-w-full flex-1 flex-row items-start justify-start gap-[0rem_1.563rem] overflow-hidden border-[1px] border-solid px-[1.188rem] py-[0.4rem]">
+                  <img
+                    className="relative h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 cursor-pointer overflow-hidden"
+                    alt=""
+                    src="/images/shop/DiscoverPage/search.svg"
+                    onClick={() => {
+                      setPerformSearchKey(true);
+                      handleSearch();
+                    }}
+                  />
+                  <input
+                    className="font-barlow text-gray-500 box-border flex h-[1.344rem] w-full flex-col items-start justify-start bg-[transparent] px-[0rem] pb-[0rem] pt-[0.156rem] text-[1rem] leading-[160.5%] text-neutral-white [border:none] [outline:none]"
+                    placeholder="Search by artwork name"
+                    type="text"
+                    value={searchKey}
+                    onChange={(e) => {
+                      setPerformSearchKey(false);
+                      handleChangeSearchKey(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setPerformSearchKey(true);
+                        handleSearch();
+                      }
+                    }}
+                  />
+                </div>
+
+                {!creatorId ? (
+                  <>
+                    <div className="rounded-10xs border-gray-600 box-border flex min-w-[10.5rem] max-w-full flex-1 flex-row items-start justify-start gap-[0rem_1.563rem] overflow-hidden border-[1px] border-solid px-[1.188rem] py-[0.4rem]">
+                      <img
+                        className="relative h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 cursor-pointer overflow-hidden"
+                        alt=""
+                        src="/images/shop/DiscoverPage/search.svg"
+                        onClick={() => {
+                          setPerformSearchKey(true);
+                          handleSearch();
+                        }}
+                      />
+                      <input
+                        className="font-barlow text-gray-500 box-border flex h-[1.344rem] w-full flex-col items-start justify-start bg-[transparent] px-[0rem] pb-[0rem] pt-[0.156rem] text-[1rem] leading-[160.5%] text-neutral-white [border:none] [outline:none]"
+                        placeholder="Search by creator name"
+                        type="text"
+                        value={searchCreatorName}
+                        onChange={(e) => {
+                          setPerformSearchKey(false);
+                          handleChangeSearchCreatorName(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            setPerformSearchKey(true);
+                            handleSearch();
+                          }
+                        }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <></>
+                )}
+
+                {searchMessage != "" ? (
+                  <div
+                    onClick={() => {
+                      setSearchCreatorName("");
+                      setSearchKey("");
+                      setSearchMessage("");
+                      renderArtwork();
+                    }}
+                    className="cursor-pointer rounded-full text-black fw-bolder bg-white text-[1rem] flex max-w-full flex-row items-center justify-center overflow-hidden border-[0px] px-[1.5rem] py-[0.4rem]"
+                  >
+                    Clear Search
+                  </div>
+                ) : (
+                  <></>
+                )}
+
+                <div>
+                  <p className="mb-1 text-[1.1rem] text-white">Price</p>
+                  <div className="rounded-10xs border-gray-600 relative flex min-w-[8rem] cursor-pointer flex-row items-start justify-center gap-[0rem_0.625rem] overflow-hidden border-[1px] border-solid bg-[transparent] px-[1rem] py-[0.469rem] text-[1rem]">
+                    <select
+                      value={sortedPrice}
+                      className="relative cursor-pointer overflow-hidden border-0 bg-[transparent] text-[1rem]"
+                      onChange={(e) => {
+                        setSortedPrice(e.target.value);
+                      }}
+                    >
+                      {sortedPriceOptions.map((option, index) => (
+                        <option key={index} value={option.value}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-1 text-[1.1rem] text-white">Category</p>
+                  <div className="rounded-10xs border-gray-600 relative flex min-w-[8rem] cursor-pointer flex-row items-start justify-center gap-[0rem_0.625rem] overflow-hidden border-[1px] border-solid bg-[transparent] px-[1rem] py-[0.469rem] text-[1rem]">
+                    <select
+                      value={searchCateId}
+                      className="relative w-full cursor-pointer overflow-hidden border-0 bg-[transparent] text-[1rem]"
+                      onChange={(e) => {
+                        setSearchCateId(e.target.value);
+                      }}
+                    >
+                      {searchCateIdOptions.map((option, index) => (
+                        <option key={index} value={option.categoryId}>
+                          {option.categoryName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
+              {searchMessage != "" ? (
+                <>
+                  <div className="min-w-full mq1150:flex-wrap flex max-w-full flex-row items-start justify-start gap-[0rem_0.875rem]  px-25">
+                    <h1 className="text-[1.2rem]">{searchMessage}</h1>
+                  </div>
+                </>
+              ) : (
+                <></>
+              )}
             </>
           ) : (
             <></>
           )}
+
           <div className="min-w-full mq800:gap-[0rem_2.25rem] mq450:gap-[0rem_1.125rem] flex max-w-full flex-row flex-wrap items-start justify-start gap-[0rem_4.563rem]  text-center text-[1.25rem]">
             <div className="mt-5 flex max-w-full flex-row flex-wrap items-start justify-start gap-[1rem_1rem]  pl-[3rem] text-whitesmoke">
               {displayArtworkList
+                .filter((a) => {
+                  if (creatorId) {
+                    return a.creator.id == creatorId;
+                  }
+                  return true;
+                })
                 .sort((a, b) => {
                   if (sortedPrice == sortedPriceOptions[0].value) {
                     return -1;
@@ -303,6 +337,9 @@ const Discover = (props: {}) => {
                   return artwork.categoryID == searchCateId;
                 })
                 .map((artwork, index) => {
+                  if (numberOfItems && index >= numberOfItems) {
+                    return <></>;
+                  }
                   return (
                     <ArtworkCard
                       key={index}
@@ -310,14 +347,21 @@ const Discover = (props: {}) => {
                       maskGroup={artwork.imageUrl.split("://example")[0]}
                       artworkName={artwork.artworkName}
                       creatorkName={artwork.creator.name}
+                      creatorId={artwork.creator.id}
                       logoFrame="/images/shop/DiscoverPage/ellipse-2@2x.png"
                       price={artwork.price}
                       discount={artwork.discount}
-                      translateYNumber={(index % 4) + 1}
+                      translateYNumber={
+                        creatorId
+                          ? 20
+                          : numberOfItems
+                            ? index + 11
+                            : (index % 4) + 1
+                      }
                     />
                   );
                 })}
-              <ArtworkCard
+              {/* <ArtworkCard
                 maskGroup="https://imgv3.fotor.com/images/cover-photo-image/a-beautiful-girl-with-gray-hair-and-lucxy-neckless-generated-by-Fotor-AI.jpg"
                 artworkName="Dreamy Virgin"
                 artworkId="1"
@@ -436,7 +480,7 @@ const Discover = (props: {}) => {
                 price={45.5}
                 discount={2}
                 translateYNumber={4}
-              />
+              /> */}
             </div>
           </div>
         </div>

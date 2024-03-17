@@ -19,7 +19,7 @@ export class CategoryService {
 
     static async getAllCategories(): Promise<ResponseDTO<CategoryDTO[]>> {
         try {
-            const response = await CategoryService.axiosInstance.get<ResponseDTO<CategoryDTO[]>>(`${API_BASE_URL}/api/category/GetAllCategory`);
+            const response = await CategoryService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/category/GetAllCategory`);
             return response.data.result;
         } catch (error) {
             console.error('Error fetching all categories:', error);
@@ -29,7 +29,7 @@ export class CategoryService {
 
     static async getCategoryByID(id: string): Promise<ResponseDTO<CategoryDTO>> {
         try {
-            const response = await CategoryService.axiosInstance.get<ResponseDTO<CategoryDTO>>(`${API_BASE_URL}/api/category/GetCategoryByID?id=${id}`);
+            const response = await CategoryService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/category/GetCategoryByID?id=${id}`);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching category by ID ${id}:`, error);

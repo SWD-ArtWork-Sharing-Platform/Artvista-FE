@@ -1,4 +1,4 @@
-import axiosInstances from "@/utils/axios";
+import axiosInstances from "@/config/axios";
 
 const requestManagement = axiosInstances.management
 const ROOT_CATEGORY = "/category"

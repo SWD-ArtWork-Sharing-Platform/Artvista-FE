@@ -4,8 +4,8 @@ import { PATH_ADMIN, PATH_AUTH, PATH_SHOP } from "@/routes/paths";
 import useAuth from "@/hooks/useAuth";
 import sweetAlert from "@/utils/sweetAlert";
 import { getUserInfo } from "@/utils/utils";
-import { Role } from "@/utils/accountRole";
-import "./index.css";
+import { Role } from "@/enums/accountRole";
+import "./index.scss";
 
 const getLocalStorage = (name: string) => {
   if (typeof window !== "undefined") {
@@ -30,7 +30,7 @@ const HeaderShopComponent = (props: {}) => {
   const userLogin = user ? JSON.parse(user) : null;
 
   return (
-    <header className="mt-2 font-barlow mq450:gap-[0px_233px] mq750:gap-[0px_233px] mq1250:gap-[0px_233px] sticky top-[0] z-[99] flex w-10/12 max-w-full flex-row items-center justify-start gap-[0px_233px] pt-[10px] text-left text-21xl text-neutral-white">
+    <header className="home-title-animation mt-2 font-barlow mq450:gap-[0px_233px] mq750:gap-[0px_233px] mq1250:gap-[0px_233px] sticky top-[0] z-[99] flex w-10/12 max-w-full flex-row items-center justify-start gap-[0px_233px] pt-[10px] text-left text-21xl text-neutral-white">
       <h1
         className="header_title font-inherit relative m-0 cursor-pointer whitespace-nowrap text-inherit font-bold"
         onClick={() => {

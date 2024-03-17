@@ -1,4 +1,4 @@
-import axiosInstances from "@/utils/axios";
+import axiosInstances from "@/config/axios";
 
 const requestMarket = axiosInstances.market
 const ROOT_ARTWORK_MARKET = "/artworkMarket"

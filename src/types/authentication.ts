@@ -15,6 +15,7 @@ export type AuthUser =
     name: string;
     email?: string;
     phoneNumber?: string;
+    address?: string;
     role?: string[];
     [key: string]: any;
   }
@@ -39,15 +40,3 @@ export type JWTContextType = {
   updateProfile: VoidFunction;
   changeUser?: (user: AuthUser) => void;
 };
-
-
-// export type Auth0ContextType = {
-//   isAuthenticated: boolean;
-//   isInitialized: boolean;
-//   user: AuthUser;
-//   method: 'auth0';
-//   login: () => Promise<void>;
-//   logout: VoidFunction;
-//   resetPassword: (email: string) => void;
-//   updateProfile: VoidFunction;
-// };
