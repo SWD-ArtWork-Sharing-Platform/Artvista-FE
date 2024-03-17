@@ -19,7 +19,7 @@ export class ConfigurationService {
 
     static async getAllConfigurations(): Promise<ResponseDTO<ConfigurationDTO[]>> {
         try {
-            const response = await ConfigurationService.axiosInstance.get<ResponseDTO<ConfigurationDTO[]>>(`${API_BASE_URL}/api/configuration/GetAllConfiguration`);
+            const response = await ConfigurationService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/configuration/GetAllConfiguration`);
             return response.data.result;
         } catch (error) {
             console.error('Error fetching all configurations:', error);
@@ -29,7 +29,7 @@ export class ConfigurationService {
 
     static async getConfigurationByID(id: string): Promise<ResponseDTO<ConfigurationDTO>> {
         try {
-            const response = await ConfigurationService.axiosInstance.get<ResponseDTO<ConfigurationDTO>>(`${API_BASE_URL}/api/configuration/GetConfigurationByID?id=${id}`);
+            const response = await ConfigurationService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/configuration/GetConfigurationByID?id=${id}`);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching configuration by ID ${id}:`, error);

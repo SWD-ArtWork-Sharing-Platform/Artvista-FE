@@ -11,3 +11,4 @@ export interface PostDTO {
     artworkDTO?: ArtworkDTO;
     interactionDTOs?: InteractionDTO[];
 }
+

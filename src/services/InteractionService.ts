@@ -18,7 +18,7 @@ export class InteractionService {
         try {
             const token = AuthService.getToken();
             const config: AxiosRequestConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await InteractionService.axiosInstance.get<ResponseDTO<InteractionDTO[]>>(`${API_BASE_URL}/api/interaction/GetAllInteraction`, config);
+            const response = await InteractionService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/interaction/GetAllInteraction`, config);
             return response.data.result;
         } catch (error) {
             console.error('Error fetching all interactions:', error);
@@ -30,7 +30,7 @@ export class InteractionService {
         try {
             const token = AuthService.getToken();
             const config: AxiosRequestConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await InteractionService.axiosInstance.get<ResponseDTO<InteractionDTO>>(`${API_BASE_URL}/api/interaction/GetInteractionByID?interactionID=${interactionID}`, config);
+            const response = await InteractionService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/interaction/GetInteractionByID?interactionID=${interactionID}`, config);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching interaction by ID ${interactionID}:`, error);
@@ -42,7 +42,7 @@ export class InteractionService {
         try {
             const token = AuthService.getToken();
             const config: AxiosRequestConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await InteractionService.axiosInstance.get<ResponseDTO<InteractionDTO[]>>(`${API_BASE_URL}/api/interaction/GetInteractionByUserID?userID=${userID}`, config);
+            const response = await InteractionService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/interaction/GetInteractionByUserID?userID=${userID}`, config);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching interactions by user ID ${userID}:`, error);
@@ -54,7 +54,7 @@ export class InteractionService {
         try {
             const token = AuthService.getToken();
             const config: AxiosRequestConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await InteractionService.axiosInstance.get<ResponseDTO<InteractionDTO[]>>(`${API_BASE_URL}/api/interaction/GetInteractionByPostID?postId=${postId}`, config);
+            const response = await InteractionService.axiosInstance.get<ResponseDTO<any>>(`${API_BASE_URL}/api/interaction/GetInteractionByPostID?postId=${postId}`, config);
             return response.data.result;
         } catch (error) {
             console.error(`Error fetching interactions by post ID ${postId}:`, error);
