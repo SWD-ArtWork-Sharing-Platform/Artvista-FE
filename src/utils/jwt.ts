@@ -1,5 +1,5 @@
 import { jwtDecode, JwtPayload } from 'jwt-decode';
-import axiosInstances from './axios';
+import axiosInstances from '../config/axios';
 
 const isValidToken = (accessToken: string): boolean => {
   if (!accessToken) {
@@ -9,6 +9,7 @@ const isValidToken = (accessToken: string): boolean => {
   try {
     const decoded: JwtPayload = jwtDecode(accessToken);
     const currentTime = Math.floor(Date.now() / 1000);
+console.log(decoded.exp, currentTime);
 
     return decoded.exp !== undefined && decoded.exp > currentTime;
   } catch (error) {

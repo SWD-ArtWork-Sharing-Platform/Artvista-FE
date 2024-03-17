@@ -1,11 +1,17 @@
 "use client";
 import { PATH_AUTH } from "@/routes/paths";
-import { Role, RoleString } from "@/utils/accountRole";
+import { Role, RoleString } from "@/enums/accountRole";
 import type { NextPage } from "next";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import useAppContext from "@/hooks/useAppContext";
+import { getUserInfoId } from "@/utils/utils";
 
 const CreatorPage: NextPage = () => {
+  const params = useParams();
+  const creatorId = params.creatorId as string;
   const router = useRouter();
+  const { enableChattingOfCustomer } = useAppContext();
+
   const sortedPriceOptions = [
     { value: "all", name: "Price: All" },
     { value: "lowtohigh", name: "Price: Low to high" },
@@ -203,7 +209,16 @@ const CreatorPage: NextPage = () => {
                   </div>
                 </div>
 
-                <button className="cursor-pointer [border:none] py-[0.4rem] px-[1.5rem] bg-primary-colour rounded-10xs overflow-hidden flex flex-row items-start justify-start gap-[0rem_0.5rem]">
+                <button
+                  onClick={() => {
+                    localStorage.setItem(
+                      "ARTWORKDETAIL_OPEN_CHAT_ID",
+                      creatorId
+                    );
+                    enableChattingOfCustomer(creatorId, "");
+                  }}
+                  className="cursor-pointer [border:none] py-[0.4rem] px-[1.5rem] bg-primary-colour rounded-10xs overflow-hidden flex flex-row items-start justify-start gap-[0rem_0.5rem]"
+                >
                   <div className="flex flex-col items-start justify-start pt-[0.063rem] px-[0rem] pb-[0rem]">
                     <img
                       className="w-[1.5rem] h-[1.5rem] relative overflow-hidden shrink-0"

@@ -1,4 +1,5 @@
 "use client";
+import artworkManagementApi from "@/api/management/artwork";
 import categoryManagementApi from "@/api/management/category";
 import interactionManagementApi from "@/api/management/interaction";
 import postManagementApi from "@/api/management/post";
@@ -9,10 +10,12 @@ import { PATH_SHOP } from "@/routes/paths";
 import { InteractionManagementDTO } from "@/types/management/InteractionManagementDTO";
 import { PostManagementDTO } from "@/types/management/PostManagementDTO";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
+import { formatDate_YYYY_MMMM_DD } from "@/utils/formatDate";
 import { getUserInfoId } from "@/utils/utils";
 import { Watermark } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { v4 } from "uuid";
 
 const ArtworkDetail = (props: {}) => {
   const params = useParams();
@@ -20,7 +23,7 @@ const ArtworkDetail = (props: {}) => {
   const [artworkDetail, setArtworkDetail] = useState<ArtworkDTO | null>(null);
   const [post, setPost] = useState<PostManagementDTO | null>(null);
   const [artworkCategory, setArtworkCategory] = useState<any>(null);
-  const [allInteractionQuantity, setAllInteractionQuantity] =
+  const [allInteractionOfPostQuantity, setAllInterctionOfPostQuantity] =
     useState<number>(0);
   const [allInteractionList, setAllInteractionList] = useState<
     InteractionManagementDTO[]
@@ -31,9 +34,15 @@ const ArtworkDetail = (props: {}) => {
   const [interactionOfUser, setInteractionOfUser] = useState<
     InteractionManagementDTO[] | null
   >(null);
-  const { isLoading, enableLoading, disableLoading } = useAppContext();
+  const {
+    isLoading,
+    enableLoading,
+    disableLoading,
+    enableChattingOfCustomer,
+    disableChattingOfCustomer,
+  } = useAppContext();
   const router = useRouter();
-  console.log(artworkDetail, post, artworkCategory, new Date().toISOString());
+  // console.log(artworkDetail, post, artworkCategory);
 
   const renderArtworkDetail = () => {
     enableLoading();
@@ -51,6 +60,24 @@ const ArtworkDetail = (props: {}) => {
       .catch((error) => {
         console.log(error);
       });
+    // artworkManagementApi
+    //   .getAllArtwork()
+    //   .then((response) => {
+    //     if (
+    //       response.data.isSuccess &&
+    //       response.data.result &&
+    //       response.data.result.isSuccess
+    //     ) {
+    //       setArtworkDetail(
+    //         response.data.result.result.filter(
+    //           (artwork: ArtworkDTO) => artwork.artworkId == artworkId
+    //         )[0]
+    //       );
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
   };
 
   const renderCategory = () => {
@@ -66,7 +93,8 @@ const ArtworkDetail = (props: {}) => {
             setArtworkCategory(
               response.data.result.result.filter(
                 (category: any) =>
-                  category.categoryId == artworkDetail?.categoryID
+                  category.categoryId == artworkDetail?.categoryID ||
+                  category.categoryId == artworkDetail?.categoryId
               )[0]
             );
           }
@@ -80,7 +108,7 @@ const ArtworkDetail = (props: {}) => {
       });
   };
 
-  const getAllInteractionQuantity = () => {
+  const getallInteractionOfPostQuantity = () => {
     interactionManagementApi
       .getAllInteraction()
       .then((response) => {
@@ -90,7 +118,6 @@ const ArtworkDetail = (props: {}) => {
           response.data.result.isSuccess
         ) {
           setAllInteractionList(response.data.result.result);
-          setAllInteractionQuantity(response.data.result.result.length);
         }
       })
       .catch((error) => {
@@ -107,7 +134,14 @@ const ArtworkDetail = (props: {}) => {
           response.data.result &&
           response.data.result.isSuccess
         ) {
-          setInteractionOfPost(response.data.result.result);
+          setInteractionOfPost(
+            response.data.result.result.filter(
+              (x: any) => x.like > 0 || x.comments != ""
+            )
+          );
+          setAllInterctionOfPostQuantity(
+            response.data.result.result.filter((x: any) => x.like > 0).length
+          );
 
           var userId = getUserInfoId();
           if (userId) {
@@ -123,7 +157,7 @@ const ArtworkDetail = (props: {}) => {
         console.log(error);
       })
       .finally(() => {
-        getAllInteractionQuantity();
+        getallInteractionOfPostQuantity();
       });
   };
 
@@ -155,15 +189,16 @@ const ArtworkDetail = (props: {}) => {
   };
 
   const handleLikePost = () => {
-    enableLoading();
+    setAllInterctionOfPostQuantity((prev) => prev + 1);
     var interactionList = [...allInteractionList];
-    const id = (
-      parseInt(
-        interactionList.reduce((max, current) =>
-          max.id > current.id ? max : current
-        ).interactionId
-      ) + 1
-    ).toString();
+    const id =
+      (
+        parseInt(
+          interactionList.reduce((max, current) =>
+            max.id > current.id ? max : current
+          ).interactionId
+        ) + 1
+      ).toString() + v4();
 
     interactionManagementApi
       .createInteraction(
@@ -186,8 +221,7 @@ const ArtworkDetail = (props: {}) => {
   };
 
   const handleUnLikePost = () => {
-    enableLoading();
-
+    setAllInterctionOfPostQuantity((prev) => prev - 1);
     if (interactionOfUser?.filter((x) => x.like > 0)[0]) {
       var interaction = interactionOfUser?.filter((x) => x.like > 0)[0];
       interactionManagementApi
@@ -207,13 +241,20 @@ const ArtworkDetail = (props: {}) => {
   useEffect(() => {
     renderArtworkDetail();
     renderPost();
+    const ARTWORKDETAIL_OPEN_CHAT_ID = localStorage.getItem(
+      "ARTWORKDETAIL_OPEN_CHAT_ID"
+    );
+    if (ARTWORKDETAIL_OPEN_CHAT_ID) {
+      enableChattingOfCustomer(ARTWORKDETAIL_OPEN_CHAT_ID, "");
+      localStorage.removeItem("ARTWORKDETAIL_OPEN_CHAT_ID");
+    }
   }, []);
 
   useEffect(() => {
     renderCategory();
   }, [artworkDetail]);
 
-  if (artworkDetail == null || post == null || artworkCategory == null) {
+  if (artworkDetail == null || post == null) {
     return (
       <>
         <Loading loading={isLoading} />
@@ -234,29 +275,45 @@ const ArtworkDetail = (props: {}) => {
           <div className="font-barlow flex max-w-full flex-row items-start justify-start self-stretch text-neutral-white">
             <div className="mq750:flex-wrap flex w-[33.875rem] max-w-full flex-row items-start justify-between gap-[1.25rem]">
               <div className="flex flex-row items-start justify-start gap-[0rem_0.25rem]">
-                <div className="relative leading-[1.313rem]">by</div>
-                <div
-                  className="relative capitalize leading-[1.313rem] text-primary-colour cursor-pointer"
-                  onClick={() => {
-                    router.push(
-                      PATH_SHOP.creator.visitPage(artworkDetail.creator.id)
-                    );
-                  }}
-                >
-                  {artworkDetail.creator.name}
-                </div>
-                <div className="relative leading-[1.313rem]">in</div>
-                <div
-                  className="relative leading-[1.313rem] text-primary-colour cursor-pointer"
-                  onClick={() => {
-                    localStorage.setItem(
-                      "DISCOVER_CATEGORY_SORT",
-                      artworkDetail.categoryID
-                    );
-                    router.push(PATH_SHOP.general.discover);
-                  }}
-                >
-                  {artworkCategory.categoryName}
+                {artworkDetail.creator ? (
+                  <>
+                    <div className="relative leading-[1.313rem]">by</div>
+                    <div
+                      className="relative capitalize leading-[1.313rem] text-primary-colour cursor-pointer"
+                      onClick={() => {
+                        router.push(
+                          PATH_SHOP.creator.visitPage(artworkDetail.creator.id)
+                        );
+                      }}
+                    >
+                      {artworkDetail.creator.name}
+                    </div>
+                  </>
+                ) : (
+                  <></>
+                )}
+                {artworkCategory ? (
+                  <>
+                    <div className="relative leading-[1.313rem]">in</div>
+                    <div
+                      className="relative leading-[1.313rem] text-primary-colour cursor-pointer"
+                      onClick={() => {
+                        localStorage.setItem(
+                          "DISCOVER_CATEGORY_SORT",
+                          artworkDetail.categoryID
+                        );
+                        router.push(PATH_SHOP.general.discover);
+                      }}
+                    >
+                      {artworkCategory.categoryName}
+                    </div>
+                  </>
+                ) : (
+                  <></>
+                )}
+                <div className="relative leading-[1.313rem]"> at </div>
+                <div className="relative leading-[1.313rem] text-primary-colour cursor-pointer">
+                  {formatDate_YYYY_MMMM_DD(post.createdOn)}
                 </div>
               </div>
               {/* <div className="font-para2-semi-14 flex flex-row items-start justify-start gap-[0rem_0.313rem] text-[0.75rem]">
@@ -290,19 +347,16 @@ const ArtworkDetail = (props: {}) => {
               >
                 <div
                   onClick={() => {
-                    if (
-                      interactionOfUser &&
-                      interactionOfUser?.filter((x) => x.like > 0).length > 0
-                    ) {
+                    if (allInteractionOfPostQuantity > 0) {
                       handleUnLikePost();
                     } else {
                       handleLikePost();
                     }
                   }}
                   style={{
-                    backgroundColor: `${interactionOfUser && interactionOfUser?.filter((x) => x.like > 0).length > 0 ? "#a259ff" : ""}`,
-                    border: `${interactionOfUser && interactionOfUser?.filter((x) => x.like > 0).length > 0 ? "none" : ""}`,
-                    color: `${interactionOfUser && interactionOfUser?.filter((x) => x.like > 0).length > 0 ? "#fff" : ""}`,
+                    backgroundColor: `${allInteractionOfPostQuantity > 0 ? "#a259ff" : ""}`,
+                    border: `${allInteractionOfPostQuantity > 0 ? "none" : ""}`,
+                    color: `${allInteractionOfPostQuantity > 0 ? "#fff" : ""}`,
                   }}
                   className="z-[1] box-border flex h-[2.688rem] w-[5.438rem] cursor-pointer flex-row items-center justify-center rounded-full border-[1px] border-solid border-dimgray-100 bg-neutral-white py-[0.625rem] pl-[1.125rem] pr-[1.375rem]"
                 >
@@ -310,9 +364,7 @@ const ArtworkDetail = (props: {}) => {
                     <div className="relative mx-1">♡</div>
                   </div>
                   <b className="font-text-labels-14px-bold relative text-left text-[0.875rem] leading-[1.313rem] mx-1">
-                    {interactionOfPost && interactionOfPost.length > 0
-                      ? interactionOfPost.length
-                      : "0"}
+                    {allInteractionOfPostQuantity}
                   </b>
                 </div>
               </div>
@@ -352,52 +404,74 @@ const ArtworkDetail = (props: {}) => {
               <div className="relative inline-block w-[26.5rem] max-w-full font-medium capitalize leading-[1.313rem]">
                 {post.description}
               </div>
-              <button className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]">
+              <button
+                onClick={() => {}}
+                className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]"
+              >
                 <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-neutral-white">
                   Purchase Now
                 </div>
               </button>
-              <button className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid">
+              <button
+                onClick={() => {}}
+                className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+              >
                 <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
                   Add To Wishlist
                 </div>
               </button>
-            </div>
-            <div className="text-bg font-para2-semi-14 flex flex-col items-start justify-start gap-[0.625rem_0rem] self-stretch text-[0.75rem]">
-              <div className="relative font-medium leading-[1.125rem]">
-                CATEGORY
-              </div>
-              <div className="flex flex-col items-start justify-start gap-[0.5rem_0rem] self-stretch">
-                <div className="mq750:flex-wrap flex flex-row items-start justify-start gap-[0rem_0.75rem] self-stretch">
-                  <button
-                    onClick={() => {
-                      localStorage.setItem(
-                        "DISCOVER_CATEGORY_SORT",
-                        artworkDetail.categoryID
-                      );
-                      router.push(PATH_SHOP.general.discover);
-                    }}
-                    className="hover:bg-silver-300 flex cursor-pointer flex-col items-start justify-start rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem] [border:none]"
-                  >
-                    <b className="font-barlow text-bg relative text-left text-[0.75rem] leading-[1.125rem]">
-                      {artworkCategory.categoryName}
-                    </b>
-                  </button>
-                  <button
-                    onClick={() => {
-                      router.push(PATH_SHOP.general.discover);
-                    }}
-                    className="flex cursor-pointer flex-row items-start justify-start bg-[transparent] p-0 [border:none]"
-                  >
-                    <div className="flex flex-col items-start justify-start whitespace-nowrap rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem]">
-                      <b className="font-barlow relative text-left text-[0.75rem] leading-[1.125rem] text-grey">
-                        See more..
-                      </b>
-                    </div>
-                  </button>
+              <button
+                onClick={() => {
+                  enableChattingOfCustomer(artworkDetail.creator.id, artworkId);
+                }}
+                className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-white bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+              >
+                <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-white">
+                  Chat With Creator
                 </div>
-              </div>
+              </button>
             </div>
+            {artworkCategory ? (
+              <>
+                <div className="text-bg font-para2-semi-14 flex flex-col items-start justify-start gap-[0.625rem_0rem] self-stretch text-[0.75rem]">
+                  <div className="relative font-medium leading-[1.125rem]">
+                    CATEGORY
+                  </div>
+                  <div className="flex flex-col items-start justify-start gap-[0.5rem_0rem] self-stretch">
+                    <div className="mq750:flex-wrap flex flex-row items-start justify-start gap-[0rem_0.75rem] self-stretch">
+                      <button
+                        onClick={() => {
+                          localStorage.setItem(
+                            "DISCOVER_CATEGORY_SORT",
+                            artworkDetail.categoryID
+                          );
+                          router.push(PATH_SHOP.general.discover);
+                        }}
+                        className="hover:bg-silver-300 flex cursor-pointer flex-col items-start justify-start rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem] [border:none]"
+                      >
+                        <b className="font-barlow text-bg relative text-left text-[0.75rem] leading-[1.125rem]">
+                          {artworkCategory.categoryName}
+                        </b>
+                      </button>
+                      <button
+                        onClick={() => {
+                          router.push(PATH_SHOP.general.discover);
+                        }}
+                        className="flex cursor-pointer flex-row items-start justify-start bg-[transparent] p-0 [border:none]"
+                      >
+                        <div className="flex flex-col items-start justify-start whitespace-nowrap rounded-full bg-chip-fill px-[1.25rem] py-[0.75rem]">
+                          <b className="font-barlow relative text-left text-[0.75rem] leading-[1.125rem] text-grey">
+                            See more..
+                          </b>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       </div>

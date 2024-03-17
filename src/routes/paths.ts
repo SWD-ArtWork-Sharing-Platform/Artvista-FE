@@ -19,7 +19,8 @@ export const PATH_SHOP = {
   },
   creator: {
     visitPage: (creatorId: string) => `/creator/${creatorId}`
-  }
+  },
+  profile: (userId: string) => `/profile/${userId}`
 };
 
 export const PATH_ADMIN = {

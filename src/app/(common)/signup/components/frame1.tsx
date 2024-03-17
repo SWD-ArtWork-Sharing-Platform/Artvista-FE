@@ -3,7 +3,7 @@ import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/JWTContext";
 import GuestGuard from "@/guards/GuestGuard";
 import { PATH_AUTH } from "@/routes/paths";
-import { RoleString } from "@/utils/accountRole";
+import { RoleString } from "@/enums/accountRole";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
