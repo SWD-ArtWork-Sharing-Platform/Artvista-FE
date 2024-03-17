@@ -4,7 +4,7 @@ import { AuthProvider } from "@/contexts/JWTContext";
 import Dashboard from "./dashboard";
 import AuthGuard from "@/guards/AuthGuard";
 import RoleBasedGuard from "@/guards/RoleBasedGuard";
-import { Role } from "@/utils/accountRole";
+import { Role } from "@/enums/accountRole";
 
 const DashboardProvider: React.FC = () => {
   return (

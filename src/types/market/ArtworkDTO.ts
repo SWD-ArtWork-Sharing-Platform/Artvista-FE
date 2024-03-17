@@ -14,6 +14,7 @@ export type ArtworkDTO = {
       email: string,
     },
     categoryID: string,
+    categoryId: string,
     imageUrl: string,
     image: any,
     category: any

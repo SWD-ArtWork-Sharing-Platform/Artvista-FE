@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useEffect, useReducer } from "react";
 // utils
-import axiosInstances from "@/utils/axios";
+import axiosInstances from "@/config/axios";
 import { isValidToken, setSession } from "@/utils/jwt";
 import { getUserInfo, setUserInfo } from "@/utils/utils";
 import sweetAlert from "@/utils/sweetAlert";
@@ -11,7 +11,7 @@ import {
   AuthUser,
   JWTContextType,
 } from "@/types/authentication";
-import { Role } from "@/utils/accountRole";
+import { Role } from "@/enums/accountRole";
 import { useRouter } from "next/navigation";
 import useAppContext from "@/hooks/useAppContext";
 import { PATH_ADMIN, PATH_AUTH } from "@/routes/paths";
@@ -139,16 +139,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
     initialize();
   }, []);
-
-  const changeUser = async (user: AuthUser) => {
-    setUserInfo(user);
-    dispatch({
-      type: Types.Login,
-      payload: {
-        user,
-      },
-    });
-  };
 
   const login = async (username: string, password: string) => {
     try {
@@ -309,7 +299,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
         register,
         resetPassword,
         updateProfile,
-        changeUser,
       }}
     >
       {children}
