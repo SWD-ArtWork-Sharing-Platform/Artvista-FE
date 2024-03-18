@@ -229,6 +229,82 @@ function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithEmail = async (email: string) => {
+    try {
+      enableLoading();
+      const response = await axiosInstances.auth
+        .post("/auth/LoginGoogle", email)
+        .then((response) => {
+          if (
+            response.data.isSuccess &&
+            response.data.result != null &&
+            response.data.result.user != null
+          ) {
+            const { id, name, email, phoneNumber, role } =
+              response.data.result.user;
+
+            const user = {
+              id: id,
+              name: name,
+              email: email,
+              phoneNumber: phoneNumber,
+              role: role,
+            };
+
+            const accessToken = response.data.result.token;
+
+            setSession(accessToken);
+            setUserInfo(user);
+
+            dispatch({
+              type: Types.Login,
+              payload: {
+                user,
+              },
+            });
+            router.push("/");
+            disableLoading();
+          } else {
+            disableLoading();
+            sweetAlert.alertFailed(
+              `Login failed.`,
+              `This email is not registered yet.`,
+              1500,
+              25
+            );
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          disableLoading();
+          sweetAlert.alertFailed(
+            `Login failed.`,
+            `This email is not registered yet.`,
+            1500,
+            25
+          );
+          router.push(PATH_AUTH.signin);
+        })
+        .finally(() => {
+          if (getUserInfo()) {
+            setTimeout(() => {
+              sweetAlert.alertSuccess("Sign In Successfully", "", 1200, 20);
+            }, 200);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+      disableLoading();
+      sweetAlert.alertFailed(
+        `Login failed.`,
+        ` Please check your email and password and try again.`,
+        4000,
+        22
+      );
+      router.push(PATH_AUTH.signin);
+    }
+  };
+
   const register = async (
     email: string,
     password: string,
@@ -238,11 +314,23 @@ function AuthProvider({ children }: { children: ReactNode }) {
     address: string
   ) => {
     enableLoading();
+
+    const trimmedPhone = phoneNumber.replace(/^0+/, "");
+    const parsedPhone = "+84" + trimmedPhone;
     const response = await axiosInstances.auth.post("/auth/register", {
       email,
       password,
       name,
-      phoneNumber,
+      parsedPhone,
+      role,
+      address,
+    });
+
+    console.log({
+      email,
+      password,
+      name,
+      parsedPhone,
       role,
       address,
     });
@@ -312,6 +400,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
         ...state,
         method: "jwt",
         login,
+        loginWithEmail,
         logout,
         register,
         resetPassword,

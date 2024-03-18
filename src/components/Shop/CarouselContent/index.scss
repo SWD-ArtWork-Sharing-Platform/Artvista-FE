@@ -39,7 +39,6 @@
 
 .carousel-image-1 {
   animation-name: carousel1;
-  animation-delay: 2s;
 }
 
 .carousel-image-2 {
@@ -58,11 +57,11 @@
 }
 @keyframes carousel2 {
   0% {
-    transform: translateY(-1rem) scale(1.02);
-    opacity: 1;
-  }
-  100% {
     transform: translateY(1.5rem) scale(0.98);
     opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-1rem) scale(1.02);
+    opacity: 1;
   }
 }

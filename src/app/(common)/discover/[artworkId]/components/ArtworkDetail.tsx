@@ -4,6 +4,7 @@ import categoryManagementApi from "@/api/management/category";
 import interactionManagementApi from "@/api/management/interaction";
 import postManagementApi from "@/api/management/post";
 import artworkMarketApi from "@/api/market/artwork";
+import wishlistMarketApi from "@/api/market/wishlist";
 import Loading from "@/components/Loading/Loading";
 import { Role } from "@/enums/accountRole";
 import useAppContext from "@/hooks/useAppContext";
@@ -12,6 +13,8 @@ import { InteractionManagementDTO } from "@/types/management/InteractionManageme
 import { PostManagementDTO } from "@/types/management/PostManagementDTO";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import { formatDate_YYYY_MMMM_DD } from "@/utils/formatDate";
+import { formatPrice } from "@/utils/formatPrice";
+import sweetAlert from "@/utils/sweetAlert";
 import { getUserInfo, getUserInfoId } from "@/utils/utils";
 import { Watermark } from "antd";
 import { useParams, useRouter } from "next/navigation";
@@ -43,7 +46,32 @@ const ArtworkDetail = (props: {}) => {
     disableChattingOfCustomer,
   } = useAppContext();
   const router = useRouter();
-  // console.log(artworkDetail, post, artworkCategory);
+
+  const [uniqueArtworkIds, setUniqueArtworkIds] = useState<any>(null);
+
+  const renderWishlist = () => {
+    wishlistMarketApi
+      .getWishList(getUserInfoId())
+      .then((response) => {
+        if (response.data.isSuccess) {
+          const uniqueArtworkIds = Array.from(
+            new Set(
+              response.data.result.details.map(
+                (detail: any) => detail.artworkId
+              )
+            )
+          );
+          if (response.data.result) {
+            setUniqueArtworkIds(uniqueArtworkIds);
+          } else {
+            setUniqueArtworkIds(undefined);
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   const renderArtworkDetail = () => {
     enableLoading();
@@ -210,9 +238,7 @@ const ArtworkDetail = (props: {}) => {
         "",
         post ? post.postId : ""
       )
-      .then((response) => {
-        console.log(response);
-      })
+      .then((response) => {})
       .catch((error) => {
         console.log(error);
       })
@@ -227,9 +253,7 @@ const ArtworkDetail = (props: {}) => {
       var interaction = interactionOfUser?.filter((x) => x.like > 0)[0];
       interactionManagementApi
         .deleteInteraction(interaction.interactionId)
-        .then((response) => {
-          console.log(response);
-        })
+        .then((response) => {})
         .catch((error) => {
           console.log(error);
         })
@@ -239,9 +263,48 @@ const ArtworkDetail = (props: {}) => {
     }
   };
 
+  const handleRemoveArtworkFromWishlist = (
+    userID: string,
+    artworkId: string
+  ) => {
+    wishlistMarketApi
+      .removeArtWorkFromWishList(userID, artworkId)
+      .then((res) => {
+        console.log(res);
+        sweetAlert.alertInfo(
+          "Remove from favorites successfully",
+          "",
+          2200,
+          28
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        renderWishlist();
+      });
+  };
+
+  const handleAddArtworkFromWishlist = (userID: string, artworkId: string) => {
+    wishlistMarketApi
+      .addArtWorkToWishList(userID, artworkId)
+      .then((res) => {
+        console.log(res);
+        sweetAlert.alertSuccess("Add to favorites successfully", "", 2200, 25);
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        renderWishlist();
+      });
+  };
+
   useEffect(() => {
     renderArtworkDetail();
     renderPost();
+    renderWishlist();
     const ARTWORKDETAIL_OPEN_CHAT_ID = localStorage.getItem(
       "ARTWORKDETAIL_OPEN_CHAT_ID"
     );
@@ -261,6 +324,10 @@ const ArtworkDetail = (props: {}) => {
         <Loading loading={isLoading} />
       </>
     );
+  }
+
+  if (uniqueArtworkIds == null) {
+    return <></>;
   }
 
   return (
@@ -389,15 +456,17 @@ const ArtworkDetail = (props: {}) => {
                   {artworkDetail.discount &&
                   artworkDetail.price &&
                   artworkDetail.discount > 0
-                    ? artworkDetail.price -
-                      (artworkDetail.price * artworkDetail.discount) / 100
-                    : artworkDetail.price}{" "}
+                    ? formatPrice(
+                        artworkDetail.price -
+                          (artworkDetail.price * artworkDetail.discount) / 100
+                      )
+                    : formatPrice(artworkDetail.price)}{" "}
                   VND
                   <span className="ml-2 text-grey line-through">
                     {artworkDetail.discount &&
                     artworkDetail.price &&
                     artworkDetail.discount > 0
-                      ? `${artworkDetail.price} VND`
+                      ? `${formatPrice(artworkDetail.price)} VND`
                       : ""}
                   </span>
                 </div>
@@ -418,14 +487,49 @@ const ArtworkDetail = (props: {}) => {
                       Purchase Now
                     </div>
                   </button>
-                  <button
-                    onClick={() => {}}
-                    className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
-                  >
-                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
-                      Add To Wishlist
-                    </div>
-                  </button>
+                  {uniqueArtworkIds &&
+                  uniqueArtworkIds?.includes(artworkDetail.artworkId) ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleRemoveArtworkFromWishlist(
+                            getUserInfoId(),
+                            artworkDetail.artworkId
+                          );
+                        }}
+                        className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-danger bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                      >
+                        <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-danger">
+                          Remove From Favorites
+                        </div>
+                      </button>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+
+                  {!uniqueArtworkIds ||
+                  (uniqueArtworkIds &&
+                    !uniqueArtworkIds?.includes(artworkDetail.artworkId)) ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleAddArtworkFromWishlist(
+                            getUserInfoId(),
+                            artworkDetail.artworkId
+                          );
+                        }}
+                        className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                      >
+                        <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
+                          Add To Favorites
+                        </div>
+                      </button>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+
                   <button
                     onClick={() => {
                       enableChattingOfCustomer(

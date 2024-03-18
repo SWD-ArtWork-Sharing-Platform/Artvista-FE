@@ -6,18 +6,29 @@ import { useParams, useRouter } from "next/navigation";
 import useAppContext from "@/hooks/useAppContext";
 import { getUserInfo, getUserInfoId } from "@/utils/utils";
 import Discover from "@/app/(common)/discover/components/Discover";
+import { useEffect, useState } from "react";
+import { getUserAvatar } from "@/utils/useFirebaseStorage";
 
 const CreatorPage: NextPage = () => {
   const params = useParams();
   const creatorId = params.creatorId as string;
   const router = useRouter();
-  const { enableChattingOfCustomer } = useAppContext();
+  const { enableChattingOfCustomer, disableLoading } = useAppContext();
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
 
-  const sortedPriceOptions = [
-    { value: "all", name: "Price: All" },
-    { value: "lowtohigh", name: "Price: Low to high" },
-    { value: "hightolow", name: "Price: High to low" },
-  ];
+  useEffect(() => {
+    disableLoading();
+    const fetchData = async () => {
+      try {
+        const avatarUrl = await getUserAvatar(creatorId ?? "");
+        setUserAvatar(avatarUrl);
+      } catch (error) {
+        console.error("Error setting avatar:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="flex-1 flex flex-col items-end justify-start gap-[5.438rem_0rem] max-w-full text-left text-[1.5rem] text-bg font-barlow mq800:gap-[2.688rem_0rem] mq450:gap-[1.375rem_0rem]">
@@ -30,10 +41,10 @@ const CreatorPage: NextPage = () => {
                   className="w-[8rem] h-[8rem] rounded-[50%] object-cover z-[1]"
                   loading="lazy"
                   alt=""
-                  src="/images/shop/CreatorVistPage/ellipse-546@2x.png"
+                  src={userAvatar ?? ""}
                 />
                 <div className="flex flex-col items-center justify-start py-[0rem] px-[1.25rem] gap-[0.813rem_0rem]">
-                  <div className="mt-3 relative leading-[1.5rem] font-semibold mq450:text-[1.188rem] mq450:leading-[1.188rem]">
+                  <div className="text-neutral-white mt-3 relative leading-[1.5rem] font-semibold mq450:text-[1.188rem] mq450:leading-[1.188rem]">
                     John Doe
                   </div>
                   <button
@@ -54,21 +65,20 @@ const CreatorPage: NextPage = () => {
                     }}
                     className="cursor-pointer [border:none] py-[0.4rem] px-[1.5rem] bg-primary-colour rounded-10xs overflow-hidden flex flex-row items-start justify-start gap-[0rem_0.5rem]"
                   >
-                    <div className="flex flex-col items-start justify-start pt-[0.063rem] px-[0rem] pb-[0rem]">
-                      {getUserInfoId() != creatorId &&
-                      JSON.parse(getUserInfo() ?? "").role[0] ==
-                        Role.CUSTOMER ? (
-                        <>
+                    {getUserInfoId() != creatorId &&
+                    JSON.parse(getUserInfo() ?? "").role[0] == Role.CUSTOMER ? (
+                      <>
+                        <div className="flex flex-col items-start justify-start pt-[0.063rem] px-[0rem] pb-[0rem]">
                           <img
                             className="w-[1.5rem] h-[1.5rem] relative overflow-hidden shrink-0"
                             alt=""
                             src="/images/shop/CreatorVistPage/uilmessage.svg"
-                          />
-                        </>
-                      ) : (
-                        <></>
-                      )}
-                    </div>
+                          />{" "}
+                        </div>
+                      </>
+                    ) : (
+                      <></>
+                    )}
                     <div className="relative text-[1rem] leading-[160.5%] font-medium font-barlow text-neutral-white text-left">
                       {getUserInfoId() != creatorId &&
                       JSON.parse(getUserInfo() ?? "").role[0] ==
@@ -77,7 +87,11 @@ const CreatorPage: NextPage = () => {
                       ) : (
                         <></>
                       )}
-                      {getUserInfoId() == creatorId ? <>Upload Art</> : <></>}
+                      {getUserInfoId() == creatorId ? (
+                        <>Upload New Art</>
+                      ) : (
+                        <></>
+                      )}
                     </div>
                   </button>
                 </div>

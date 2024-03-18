@@ -12,19 +12,30 @@ import Loading from "@/components/Loading/Loading";
 import useAppContext from "@/hooks/useAppContext";
 import sweetAlert from "@/utils/sweetAlert";
 import { PATH_AUTH } from "@/routes/paths";
+import { useAuthGoogle } from "@/contexts/AuthGoogleContext";
 
 const SignUpInfoScreen = (props: {}) => {
   var router = useRouter();
   const [squareCheckboxSolidChecked, setSquareCheckboxSolidChecked] =
     useState(false);
-  const [registerByEmail, setRegisterByEmail] = useState(false);
-  const [emailRegisterByEmail, setEmailRegisterByEmail] = useState("");
-  const [confirmEmailMode, setConfirmEmailMode] = useState(false);
-  const [confirmEmailSuccesful, setConfirmEmailSuccesful] = useState(false);
+  const [registerByEmail, setRegisterByEmail] = useState<boolean>(false);
+  const [emailRegisterByEmail, setEmailRegisterByEmail] = useState<string>("");
+  const [confirmEmailMode, setConfirmEmailMode] = useState<boolean>(false);
+  const [fullname, setFullname] = useState<string>("");
+  const [confirmEmailSuccesful, setConfirmEmailSuccesful] =
+    useState<boolean>(false);
   const formItemLayout = {};
   const [form] = Form.useForm();
   const { login, register, isAuthenticated } = useAuth();
   const { isLoading, disableLoading } = useAppContext();
+  const { googleSignIn, user, logOut } = useAuthGoogle();
+  const handleGoogleSignUp = async () => {
+    try {
+      await googleSignIn();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     var registerError = localStorage.getItem("REGISTER_CONFIRMING_ERROR");
@@ -95,6 +106,20 @@ const SignUpInfoScreen = (props: {}) => {
     },
   });
 
+  useEffect(() => {
+    if (user?.email && localStorage.getItem("GOOGLE_AUTH_USING")) {
+      setEmailRegisterByEmail(user?.email);
+      setRegisterByEmail(true);
+      if (user?.displayName) {
+        formik.setFieldValue("name", user?.displayName);
+        setFullname(user?.displayName);
+      }
+    } else if (user?.email && !localStorage.getItem("GOOGLE_AUTH_USING")) {
+      logOut();
+    }
+    localStorage.removeItem("GOOGLE_AUTH_USING");
+  }, [user]);
+
   if (!confirmEmailMode) {
     return (
       <div className="text-lightslategray font-barlow mq800:gap-[0px_24px] mq1325:flex-wrap relative flex w-full min-w-full flex-row items-start justify-start gap-[0px_49px] overflow-hidden bg-neutral-white text-left text-base tracking-[normal]">
@@ -155,6 +180,7 @@ const SignUpInfoScreen = (props: {}) => {
                             },
                           ]}
                           hasFeedback
+                          initialValue={registerByEmail ? fullname : ""}
                         >
                           <Input
                             name="name"
@@ -200,7 +226,7 @@ const SignUpInfoScreen = (props: {}) => {
                           />
                         </Form.Item>
                         <p
-                          className="col-sm-12 col-md-7 m-0 mb-4 p-0 ps-1"
+                          className="col-sm-12 col-md-7 m-0 mb-4 p-0 ps-0 text-[1rem]"
                           style={{
                             display: `${!registerByEmail ? "none" : ""}`,
                             transform: "translateY(5px)",
@@ -395,32 +421,45 @@ const SignUpInfoScreen = (props: {}) => {
                         </button>
                       </Form.Item>
                     </Form>
-                    <div className="text-silver-200 mq450:flex-wrap mq450:gap-[0px_17px] flex flex-row items-end justify-center gap-[0px_35px] self-stretch text-center text-xs">
-                      <div className="box-border flex h-1.5 min-w-[112px] flex-1 flex-col items-start justify-start px-0 pb-1.5 pt-0">
-                        <div className="border-whitesmoke-100 relative box-border h-px self-stretch border-t-[1px] border-solid" />
-                      </div>
-                      <div className="mq450:w-full mq450:h-3 relative flex w-3 items-center justify-center">
-                        Or
-                      </div>
-                      <div className="box-border flex h-1.5 min-w-[112px] flex-1 flex-col items-start justify-start px-0 pb-1.5 pt-0">
-                        <div className="border-whitesmoke-100 relative box-border h-px self-stretch border-t-[1px] border-solid" />
-                      </div>
-                    </div>
-                    <div className="text-neutral-black mq450:gap-[0rem_2.313rem] mq450:pl-[1.25rem] mq450:pr-[1.25rem] mq450:box-border box-border flex w-full max-w-full cursor-pointer flex-row items-center justify-center gap-[0rem_1rem] self-stretch rounded-md bg-neutral-white px-[2.688rem] pb-[1.188rem] pt-[1.313rem] text-center shadow-[0px_4px_10px_rgba(0,_0,_0,_0.08)]">
-                      <div className="relative hidden h-[4rem] w-[26.625rem] max-w-full rounded-md bg-neutral-white shadow-[0px_4px_10px_rgba(0,_0,_0,_0.08)]" />
 
-                      <div className="box-border flex flex-row items-center justify-center px-[0rem] pb-[0rem] pt-[0.125rem]">
-                        <img
-                          className="relative z-[1] h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 overflow-hidden"
-                          loading="lazy"
-                          alt=""
-                          src="/images/shop/SignUpPage/2/flatcoloriconsgoogle.svg"
-                        />
-                        <div className="relative z-[1] w-full self-stretch pl-5 font-medium">
-                          Sign Up with Google
+                    {!registerByEmail ? (
+                      <>
+                        <div className="text-silver-200 mq450:flex-wrap mq450:gap-[0px_17px] flex flex-row items-end justify-center gap-[0px_35px] self-stretch text-center text-xs">
+                          <div className="box-border flex h-1.5 min-w-[112px] flex-1 flex-col items-start justify-start px-0 pb-1.5 pt-0">
+                            <div className="border-whitesmoke-100 relative box-border h-px self-stretch border-t-[1px] border-solid" />
+                          </div>
+                          <div className="mq450:w-full mq450:h-3 relative flex w-3 items-center justify-center">
+                            Or
+                          </div>
+                          <div className="box-border flex h-1.5 min-w-[112px] flex-1 flex-col items-start justify-start px-0 pb-1.5 pt-0">
+                            <div className="border-whitesmoke-100 relative box-border h-px self-stretch border-t-[1px] border-solid" />
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                        <div className="text-neutral-black mq450:gap-[0rem_2.313rem] mq450:pl-[1.25rem] mq450:pr-[1.25rem] mq450:box-border box-border flex w-full max-w-full cursor-pointer flex-row items-center justify-center gap-[0rem_1rem] self-stretch rounded-md bg-neutral-white px-[2.688rem] pb-[1.188rem] pt-[1.313rem] text-center shadow-[0px_4px_10px_rgba(0,_0,_0,_0.08)]">
+                          <div className="relative hidden h-[4rem] w-[26.625rem] max-w-full rounded-md bg-neutral-white shadow-[0px_4px_10px_rgba(0,_0,_0,_0.08)]" />
+
+                          <div
+                            onClick={() => {
+                              localStorage.setItem("GOOGLE_AUTH_USING", "true");
+                              handleGoogleSignUp();
+                            }}
+                            className="cursor-pointer box-border flex flex-row items-center justify-center px-[0rem] pb-[0rem] pt-[0.125rem]"
+                          >
+                            <img
+                              className="relative z-[1] h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 overflow-hidden"
+                              loading="lazy"
+                              alt=""
+                              src="/images/shop/SignUpPage/2/flatcoloriconsgoogle.svg"
+                            />
+                            <div className="relative z-[1] w-full self-stretch pl-5 font-medium">
+                              Sign Up with Google
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                 </div>
               </div>

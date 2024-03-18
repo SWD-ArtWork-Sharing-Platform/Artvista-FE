@@ -6,6 +6,7 @@ import TrendingProduct from "@/components/Shop/TrendingProduct";
 import TopCreator from "@/components/Shop/TopCreator";
 import HomeCategories from "@/components/Shop/HomeCategories";
 import Carousel from "@/components/Shop/Carousel";
+import PackageSection from "@/components/Shop/Package";
 
 const HomePageProvider = (props: {}) => {
   return (
@@ -15,6 +16,7 @@ const HomePageProvider = (props: {}) => {
           <ShopLayout>
             <Carousel />
             <TrendingProduct />
+            <PackageSection />
             <TopCreator />
             <HomeCategories />
           </ShopLayout>
