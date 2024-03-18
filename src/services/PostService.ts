@@ -8,7 +8,7 @@ export class PostService {
     private static axiosInstance = axios.create();
 
     static initialize() {
-        PostService.axiosInstance.interceptors.request.use(async (config: any) => {
+        PostService.axiosInstance.interceptors.request.use(async (config) => {
             const token = await AuthService.getToken();
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
