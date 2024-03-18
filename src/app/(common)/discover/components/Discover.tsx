@@ -8,13 +8,19 @@ import { CategoryManagementDTO } from "@/types/management/CategoryManagementDTO"
 import artworkMarketApi from "@/api/market/artwork";
 import categoryManagementApi from "@/api/management/category";
 import { NextPage } from "next";
+import { ArtworkStatus } from "@/enums/artwork";
 
 export type DiscoverType = {
   numberOfItems?: number;
   creatorId?: string;
+  uniqueArtworkIds?: string[];
 };
 
-const Discover: NextPage<DiscoverType> = ({ numberOfItems, creatorId }) => {
+const Discover: NextPage<DiscoverType> = ({
+  numberOfItems,
+  creatorId,
+  uniqueArtworkIds,
+}) => {
   const [artworkList, setArtworkList] = useState<ArtworkDTO[]>([]);
   const [displayArtworkList, setDisplayArtworkList] = useState<ArtworkDTO[]>(
     []
@@ -34,8 +40,6 @@ const Discover: NextPage<DiscoverType> = ({ numberOfItems, creatorId }) => {
     { value: "lowtohigh", name: "Low to high" },
     { value: "hightolow", name: "High to low" },
   ];
-  // console.log(artworkList, displayArtworkList);
-
   const renderArtwork = (
     searchkey: string = "",
     minPrice: number = 0,
@@ -302,11 +306,27 @@ const Discover: NextPage<DiscoverType> = ({ numberOfItems, creatorId }) => {
           )}
 
           <div className="min-w-full mq800:gap-[0rem_2.25rem] mq450:gap-[0rem_1.125rem] flex max-w-full flex-row flex-wrap items-start justify-start gap-[0rem_4.563rem]  text-center text-[1.25rem]">
-            <div className="mt-5 flex max-w-full flex-row flex-wrap items-start justify-start gap-[1rem_1rem]  pl-[3rem] text-whitesmoke">
+            <div className="mt-5 flex max-w-full flex-row flex-wrap items-start justify-start gap-[1rem_1rem]  pl-[3rem] text-neutral-white">
               {displayArtworkList
+                .filter(
+                  (a) =>
+                    a.status.trim().toLowerCase() ==
+                      ArtworkStatus.Available.trim().toLowerCase() ||
+                    a.status.trim().toLowerCase() ==
+                      ArtworkStatus.Sold.trim().toLowerCase()
+                )
                 .filter((a) => {
                   if (creatorId) {
                     return a.creator.id == creatorId;
+                  }
+                  return true;
+                })
+                .filter((a) => {
+                  if (uniqueArtworkIds && uniqueArtworkIds.length > 0) {
+                    return uniqueArtworkIds?.includes(a.artworkId);
+                  }
+                  if (uniqueArtworkIds && uniqueArtworkIds.length == 0) {
+                    return false;
                   }
                   return true;
                 })
@@ -352,7 +372,7 @@ const Discover: NextPage<DiscoverType> = ({ numberOfItems, creatorId }) => {
                       price={artwork.price}
                       discount={artwork.discount}
                       translateYNumber={
-                        creatorId
+                        creatorId || uniqueArtworkIds
                           ? 20
                           : numberOfItems
                             ? index + 11

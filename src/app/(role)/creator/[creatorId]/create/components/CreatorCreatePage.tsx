@@ -1,6 +1,5 @@
 "use client";
 import { PATH_SHOP } from "@/routes/paths";
-import { Role, RoleString } from "@/enums/accountRole";
 import type { NextPage } from "next";
 import { useParams, useRouter } from "next/navigation";
 import useAppContext from "@/hooks/useAppContext";
@@ -16,6 +15,7 @@ import { ArtworkStatus } from "@/enums/artwork";
 import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import artworkMarketApi from "@/api/market/artwork";
 import Loading from "@/components/Loading/Loading";
+import axios from "axios";
 
 export type CreatorCreateType = {
   editMode?: boolean;
@@ -50,37 +50,52 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
       imageUrl: "",
       imageLocalPath: "",
       image: imageUpload,
-      postDTOs: null,
-      reportDTOs: null,
+      //postDTOs: null,
+      //reportDTOs: null,
       description: "",
     },
     onSubmit: async (values) => {
-      console.log(imageUpload);
       values.status = ArtworkStatus.Available;
       values.image = imageUpload;
 
-      artworkManagementApi
-        .createNewArtwork(
-          values.artworkId,
-          values.artworkName,
-          values.price,
-          values.discount,
-          ArtworkStatus.Available,
-          values.id,
-          values.categoryId,
-          values.imageUrl,
-          values.imageLocalPath,
-          imageUpload ?? null,
-          values.postDTOs,
-          values.reportDTOs
-        )
+      // artworkManagementApi
+      //   .createNewArtwork(
+      //     values.artworkId,
+      //     values.artworkName,
+      //     values.price,
+      //     values.discount,
+      //     ArtworkStatus.Available,
+      //     values.id,
+      //     values.categoryId,
+      //     values.imageUrl,
+      //     values.imageLocalPath,
+      //     imageUpload ?? null,
+      //     values.postDTOs,
+      //     values.reportDTOs
+      //   )
+      //   .then((res) => {
+      //     console.log(res);
+      //   })
+      //   .catch((err) => {
+      //     console.log(err);
+      //   });
+      const formData = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+        if (key === "image" && value) {
+          formData.append(key, value as File);
+        } else {
+          formData.append(key, (value ?? "").toString());
+        }
+      });
+
+      await artworkManagementApi
+        .createArtwork(formData)
         .then((res) => {
           console.log(res);
         })
         .catch((err) => {
           console.log(err);
         });
-      console.log(values);
     },
   });
 
@@ -123,8 +138,6 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
             imageUrl: artwork.imageUrl,
             imageLocalPath: artwork.imageLocalPath ?? "",
             image: artwork.image,
-            postDTOs: null,
-            reportDTOs: null,
             description: "",
           });
         }
@@ -136,8 +149,6 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
         disableLoading();
       });
   };
-
-  console.log(artworkDetail, formik.values);
 
   useEffect(() => {
     renderArtworkDetail();
@@ -158,15 +169,18 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
   };
 
   if (editMode && !artworkDetail) {
-    return (
-      <>
-        <Loading loading={isLoading} />
-      </>
-    );
+    return <></>;
   }
 
   return (
     <>
+      {editMode ? (
+        <>
+          <Loading loading={isLoading} />
+        </>
+      ) : (
+        <></>
+      )}
       <TitlePageFrame
         title={`${!editMode ? "Upload Your Art" : "Edit Your Art"}`}
         subtitle={`${!editMode ? "Upload the artwork you want to sell" : "Edit your existing artwork now"}`}
@@ -401,10 +415,6 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
                     {
                       required: true,
                       message: "Discount is not in correct form",
-                    },
-                    {
-                      whitespace: true,
-                      message: "Discount cannot be empty",
                     },
                     {
                       pattern: /^(100(\.0+)?|\d{1,2}(\.\d+)?)$/,

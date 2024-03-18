@@ -1,4 +1,5 @@
 import axiosInstances from "@/config/axios";
+import axios from "axios";
 
 const requestManagement = axiosInstances.management
 const ROOT_ARTWORK = "/artwork"
@@ -16,7 +17,7 @@ id: string,
 categoryId: string,
 imageUrl: string,
 imageLocalPath: string,
-image: File | null,
+image: File | FormData | null,
 postDTOs: any = null,
 reportDTOs: any = null) => requestManagement.post(`${ROOT_ARTWORK}/CreateNewArtwork`, {
     artworkId,
@@ -33,10 +34,18 @@ reportDTOs: any = null) => requestManagement.post(`${ROOT_ARTWORK}/CreateNewArtw
     reportDTOs
 })
 
+const createArtwork = async (formData: FormData) => await axios
+.post(`${ROOT_ARTWORK}`, formData, {
+  headers: {
+    "Content-Type": "multipart/form-data",
+    "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+  },
+})
+
 const artworkManagementApi = {
     getAllArtwork,
     getAllArtworkDetail,
-    createNewArtwork
+    createArtwork
 };
   
 export default artworkManagementApi;

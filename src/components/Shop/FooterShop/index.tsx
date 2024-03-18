@@ -2,7 +2,7 @@
 
 import { PATH_AUTH, PATH_SHOP } from "@/routes/paths";
 import { useRouter } from "next/navigation";
-import "./index.css";
+import "./index.scss";
 
 const FooterShop = (props: {}) => {
   const router = useRouter();

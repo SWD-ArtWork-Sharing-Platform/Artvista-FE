@@ -15,7 +15,6 @@ export const getUserAvatar = async (userId: string): Promise<string> => {
         const response = await listAll(imageListRef);
         for (var i = 0; i <= response.items.length - 1; i++) {
             const url = await getDownloadURL(response.items[i]);
-            console.log(url);
             if (url.includes(userId)) {
                 return url;
             }

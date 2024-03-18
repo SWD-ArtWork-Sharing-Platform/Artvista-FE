@@ -22,6 +22,7 @@ import { PATH_SHOP } from "@/routes/paths";
 import { ref } from "firebase/storage";
 import { getUserAvatar } from "@/utils/useFirebaseStorage";
 import sweetAlert from "@/utils/sweetAlert";
+import ResetPasswordProfile from "./ResetPasswordProfile";
 
 const ProfileComponent: NextPage = () => {
   const params = useParams();
@@ -32,8 +33,11 @@ const ProfileComponent: NextPage = () => {
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [imageUpload, setImageUpload] = useState<File | null>(null);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userPhone, setUserPhone] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isLoading, enableLoading, disableLoading } = useAppContext();
+  const [resetPasswordMode, setResetPasswordMode] = useState<boolean>(false);
   const imageListRef = refStorage(firebaseStorage, "userImages/");
 
   const formik = useFormik({
@@ -46,7 +50,6 @@ const ProfileComponent: NextPage = () => {
     },
 
     onSubmit: async (values) => {
-      console.log(values);
       enableLoading();
       if (previewImg && previewImg != currentAvatar) {
         changeAvatarImage(userLogin?.id ?? "", imageUpload);
@@ -66,7 +69,6 @@ const ProfileComponent: NextPage = () => {
           values.address
         )
         .then((response) => {
-          console.log(response);
           if (response.data.isSuccess) {
             setUserInfo({
               id: userLogin ? userLogin.id : "",
@@ -76,11 +78,13 @@ const ProfileComponent: NextPage = () => {
               address: values.address,
               role: userLogin ? userLogin.role : [],
             });
+            setUserName(values.name);
+            setUserPhone(values.phoneNumber);
           }
         })
         .catch((err) => console.log(err))
         .finally(() => {
-          router.push(PATH_SHOP.profile(userLogin ? userLogin.id : ""));
+          router.push(PATH_SHOP.profile(userLogin?.id));
           sweetAlert.alertSuccess("Update Profile Successfully", "", 1800, 22);
           disableLoading();
         });
@@ -110,6 +114,8 @@ const ProfileComponent: NextPage = () => {
         email: USER_LOGIN.email ?? "",
         address: USER_LOGIN.address ?? "",
       });
+      setUserName(USER_LOGIN.name);
+      setUserPhone(USER_LOGIN.phoneNumber);
     }
 
     setUserAvatar(USER_LOGIN);
@@ -129,7 +135,6 @@ const ProfileComponent: NextPage = () => {
         const storagePath = decodeURIComponent(
           new URL(currentAvatar ?? "").pathname
         );
-        console.log(storagePath);
 
         const imageRef = ref(
           firebaseStorage,
@@ -141,7 +146,6 @@ const ProfileComponent: NextPage = () => {
       const newImageRef = ref(firebaseStorage, imagePath);
       await uploadBytes(newImageRef, newImageFile)
         .then((snapshot) => {
-          console.log("Uploaded a file!", snapshot);
           const storageRef = ref(firebaseStorage, `userImages/${imageName}`);
           return getDownloadURL(storageRef);
         })
@@ -149,7 +153,6 @@ const ProfileComponent: NextPage = () => {
           setCurrentAvatar(downloadURL);
           setPreviewImg(null);
           setImageUpload(null);
-          disableLoading();
         })
         .catch((error) => {
           console.error("Error uploading file:", error);
@@ -207,7 +210,7 @@ const ProfileComponent: NextPage = () => {
                       />
                     </>
                   )}
-                  {!previewImg ? (
+                  {!previewImg && !resetPasswordMode ? (
                     <>
                       <div
                         className="mt-5 header_btn_hover flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
@@ -222,6 +225,10 @@ const ProfileComponent: NextPage = () => {
                       </div>
                     </>
                   ) : (
+                    <></>
+                  )}
+
+                  {previewImg && !resetPasswordMode ? (
                     <>
                       <div
                         className="mt-5 header_btn_hover flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
@@ -246,15 +253,17 @@ const ProfileComponent: NextPage = () => {
                         </div>
                       </div>
                     </>
+                  ) : (
+                    <></>
                   )}
                   <div className="text-center flex flex-col items-center justify-start py-[0rem] px-[1.25rem] gap-[0.813rem_0rem]">
                     <div className="mt-5 relative leading-[1.5rem] font-semibold mq450:text-[1.188rem] mq450:leading-[1.188rem]">
-                      {userLogin.name}
+                      {userName}
                       <div className="text-[1rem] mt-3 relative leading-[1.5rem] font-semibold mq450:text-[1.188rem] mq450:leading-[1.188rem]">
                         Email: {userLogin.email}
                       </div>
                       <div className="text-[1rem] mt-3 relative leading-[1.5rem] font-semibold mq450:text-[1.188rem] mq450:leading-[1.188rem]">
-                        Phone: {userLogin.phoneNumber}
+                        Phone: {userPhone}
                       </div>
                       {userLogin.address && userLogin.address != "" ? (
                         <>
@@ -272,48 +281,50 @@ const ProfileComponent: NextPage = () => {
             </div>
 
             <div className="w-[60rem] self-stretch flex flex-row flex-wrap items-start justify-start max-w-full text-center text-[1.25rem]">
-              <Form
-                onFinish={formik.handleSubmit}
-                form={form}
-                size="large"
-                autoComplete="off"
-                className="w-full"
-              >
-                <div className="row align-items-start justify-content-between">
-                  <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
-                    <span>
-                      Fullname
-                      <span className="text-red">*</span>
-                    </span>
-                  </p>
-                  <Form.Item
-                    className="text-start col-sm-12 col-md-7 mx-0 px-0"
-                    name="name"
-                    label=""
-                    rules={[
-                      {
-                        required: true,
-                        message: "Fullname cannot be blank",
-                      },
-                      {
-                        message: "Fullname is not in correct form",
-                        pattern:
-                          /^(([\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{0,}[\S^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{1,})|([\S^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{1,1}))$/,
-                      },
-                    ]}
-                    hasFeedback
-                    initialValue={userLogin?.name ?? ""}
+              {!resetPasswordMode ? (
+                <>
+                  <Form
+                    onFinish={formik.handleSubmit}
+                    form={form}
+                    size="large"
+                    autoComplete="off"
+                    className="w-full"
                   >
-                    <Input
-                      name="name"
-                      value={formik.values.name}
-                      onChange={formik.handleChange}
-                      placeholder="Enter fullname"
-                    />
-                  </Form.Item>
-                </div>
+                    <div className="row align-items-start justify-content-between">
+                      <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
+                        <span>
+                          Fullname
+                          <span className="text-red">*</span>
+                        </span>
+                      </p>
+                      <Form.Item
+                        className="text-start col-sm-12 col-md-7 mx-0 px-0"
+                        name="name"
+                        label=""
+                        rules={[
+                          {
+                            required: true,
+                            message: "Fullname cannot be blank",
+                          },
+                          {
+                            message: "Fullname is not in correct form",
+                            pattern:
+                              /^(([\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{0,}[\S^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{1,})|([\S^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{1,1}))$/,
+                          },
+                        ]}
+                        hasFeedback
+                        initialValue={userLogin?.name ?? ""}
+                      >
+                        <Input
+                          name="name"
+                          value={formik.values.name}
+                          onChange={formik.handleChange}
+                          placeholder="Enter fullname"
+                        />
+                      </Form.Item>
+                    </div>
 
-                {/* <div className="row align-items-start justify-content-between">
+                    {/* <div className="row align-items-start justify-content-between">
                 <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
                   <span>
                     Email
@@ -358,214 +369,151 @@ const ProfileComponent: NextPage = () => {
                 </p>
               </div> */}
 
-                <div className="row align-items-start justify-content-between">
-                  <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
-                    <span>
-                      Phone number
-                      <span className="text-red">*</span>
-                    </span>
-                  </p>
-                  <Form.Item
-                    className="text-start col-sm-12 col-md-7 mx-0 px-0"
-                    name="phoneNumber"
-                    label=""
-                    rules={[
-                      {
-                        required: true,
-                        message: "Phone number cannot be blank",
-                      },
-                      {
-                        message: "Phone number must be 10-11 numbers",
-                        pattern: /^([0-9]{10,11})$/,
-                      },
-                      {
-                        message: "Phone number is not correct form",
-                        pattern:
-                          /^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$/,
-                      },
-                    ]}
-                    hasFeedback
-                    initialValue={userLogin?.phoneNumber ?? ""}
-                  >
-                    <Input
-                      style={{ width: "100%" }}
-                      name="phoneNumber"
-                      value={formik.values.phoneNumber}
-                      onChange={formik.handleChange}
-                      placeholder="Enter phone number"
-                    />
-                  </Form.Item>
-                </div>
-
-                {/* <div className="row align-items-start justify-content-between">
-                <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
-                  <span>
-                    Password
-                    <span className="text-red">*</span>
-                  </span>
-                </p>
-                <Form.Item
-                  className="text-start col-sm-12 col-md-7 mx-0 px-0"
-                  name="password"
-                  label=""
-                  rules={[
-                    {
-                      required: true,
-                      message: "Password cannot be blank",
-                    },
-                    {
-                      min: 6,
-                      message: "Password is at least 6 characters",
-                    },
-                    {
-                      pattern: /[a-zA-Z]/,
-                      message: "Password must have at least one letter",
-                    },
-                    {
-                      pattern: /\d/,
-                      message: "Password must have at least one digit",
-                    },
-                    {
-                      pattern: /[^a-zA-Z\d]/,
-                      message:
-                        "Password must have at least one non-alphanumeric character",
-                    },
-                    {
-                      pattern: /[A-Z]/,
-                      message:
-                        "Password must have at least one uppercase letter",
-                    },
-                  ]}
-                  hasFeedback
-                >
-                  <Input.Password
-                    name="password"
-                    type="password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    placeholder="Enter password"
-                  />
-                </Form.Item>{" "}
-              </div>
-
-              <div className="row align-items-start justify-content-between">
-                <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
-                  <span>
-                    Confirm password
-                    <span className="text-red">*</span>
-                  </span>
-                </p>
-                <Form.Item
-                  className="text-start col-sm-12 col-md-7 mx-0 px-0"
-                  name="confirm_password"
-                  label=""
-                  dependencies={["password"]}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Confirm password is required",
-                    },
-                    ({ getFieldValue }) => ({
-                      validator(_, value) {
-                        if (!value || getFieldValue("password") === value) {
-                          return Promise.resolve();
-                        }
-                        return Promise.reject(
-                          "Confirm password does not match"
-                        );
-                      },
-                    }),
-                  ]}
-                  hasFeedback
-                >
-                  <Input.Password
-                    name="confirm_password"
-                    type="password"
-                    placeholder="Enter password again"
-                  />
-                </Form.Item>
-              </div> */}
-
-                <div className="row align-items-start justify-content-between">
-                  <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
-                    <span>Address</span>
-                  </p>
-                  <Form.Item
-                    className="text-start col-sm-12 col-md-7 mx-0 px-0"
-                    name="address"
-                    label=""
-                    rules={[
-                      {
-                        required: false,
-                      },
-                      {
-                        pattern: /^(([]{0,0})|([\w]{1,1}[\w\s,]{0,}))$/,
-                        message: "Address is not in correct form",
-                      },
-                    ]}
-                    hasFeedback
-                    initialValue={userLogin?.address ?? ""}
-                  >
-                    <TextArea
-                      name="address"
-                      value={formik.values.address}
-                      onChange={formik.handleChange}
-                      placeholder="Enter address (Optional)"
-                    />
-                  </Form.Item>
-                </div>
-
-                <Form.Item className="text-center">
-                  <button
-                    type="submit"
-                    className="hover:bg-blueviolet box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-primary-colour px-5 py-[10px] [border:none]"
-                  >
-                    <div className="font-barlow relative flex w-full items-center justify-center text-center text-lg font-medium text-neutral-white">
-                      Save
+                    <div className="row align-items-start justify-content-between">
+                      <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
+                        <span>
+                          Phone number
+                          <span className="text-red">*</span>
+                        </span>
+                      </p>
+                      <Form.Item
+                        className="text-start col-sm-12 col-md-7 mx-0 px-0"
+                        name="phoneNumber"
+                        label=""
+                        rules={[
+                          {
+                            required: true,
+                            message: "Phone number cannot be blank",
+                          },
+                          {
+                            message: "Phone number must be 10-11 numbers",
+                            pattern: /^([0-9]{10,11})$/,
+                          },
+                          {
+                            message: "Phone number is not correct form",
+                            pattern:
+                              /^(0|84)(2(0[3-9]|1[0-6|8|9]|2[0-2|5-9]|3[2-9]|4[0-9]|5[1|2|4-9]|6[0-3|9]|7[0-7]|8[0-9]|9[0-4|6|7|9])|3[2-9]|5[5|6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])([0-9]{7})$/,
+                          },
+                        ]}
+                        hasFeedback
+                        initialValue={userLogin?.phoneNumber ?? ""}
+                      >
+                        <Input
+                          style={{ width: "100%" }}
+                          name="phoneNumber"
+                          value={formik.values.phoneNumber}
+                          onChange={formik.handleChange}
+                          placeholder="Enter phone number"
+                        />
+                      </Form.Item>
                     </div>
-                  </button>
-                  <button
-                    type="reset"
-                    onClick={() => {
-                      form.resetFields();
-                      formik.setValues({
-                        name: userLogin.name ?? "",
-                        phoneNumber: userLogin.phoneNumber ?? "",
-                        email: userLogin.email ?? "",
-                        address: userLogin.address ?? "",
-                      });
-                      setPreviewImg(currentAvatar);
-                      setImageUpload(null);
+
+                    <div className="row align-items-start justify-content-between">
+                      <p className="text-start text-white relative self-stretch pb-1 text-lg font-medium leading-[28px]">
+                        <span>Address</span>
+                      </p>
+                      <Form.Item
+                        className="text-start col-sm-12 col-md-7 mx-0 px-0"
+                        name="address"
+                        label=""
+                        rules={[
+                          {
+                            required: false,
+                          },
+                          {
+                            pattern: /^(([]{0,0})|([\w]{1,1}[\w\s,]{0,}))$/,
+                            message: "Address is not in correct form",
+                          },
+                        ]}
+                        hasFeedback
+                        initialValue={userLogin?.address ?? ""}
+                      >
+                        <TextArea
+                          name="address"
+                          value={formik.values.address}
+                          onChange={formik.handleChange}
+                          placeholder="Enter address (Optional)"
+                        />
+                      </Form.Item>
+                    </div>
+
+                    <Form.Item className="text-center">
+                      <div>
+                        <p
+                          className="cursor-pointer text-end text-blue-500 mb-5"
+                          style={{ fontWeight: "bolder" }}
+                          onClick={() => {
+                            setResetPasswordMode(true);
+                          }}
+                        >
+                          Change Your Password?
+                        </p>
+                      </div>
+                      <button
+                        type="submit"
+                        className="hover:bg-blueviolet box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-primary-colour px-5 py-[10px] [border:none]"
+                      >
+                        <div className="font-barlow relative flex w-full items-center justify-center text-center text-lg font-medium text-neutral-white">
+                          Save
+                        </div>
+                      </button>
+                      <button
+                        type="reset"
+                        onClick={() => {
+                          form.resetFields();
+                          formik.setValues({
+                            name: userLogin.name ?? "",
+                            phoneNumber: userLogin.phoneNumber ?? "",
+                            email: userLogin.email ?? "",
+                            address: userLogin.address ?? "",
+                          });
+                          setPreviewImg(currentAvatar);
+                          setImageUpload(null);
+                        }}
+                        className="mt-4 hover:bg-blueviolet box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-black px-5 py-[10px] [border:none]"
+                      >
+                        <div className="font-barlow relative flex w-full items-center justify-center text-center text-lg font-medium text-neutral-white">
+                          Reset
+                        </div>
+                      </button>
+                    </Form.Item>
+                  </Form>
+                  <input
+                    ref={fileInputRef}
+                    style={{
+                      width: "100%",
+                      cursor: "pointer",
+                      display: "none",
                     }}
-                    className="mt-4 hover:bg-blueviolet box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-black px-5 py-[10px] [border:none]"
+                    name="img"
+                    placeholder="Select Image"
+                    id="imgInp"
+                    type="file"
+                    onChange={(e) => {
+                      const fileList = e.target.files;
+                      if (fileList && fileList.length > 0) {
+                        setImageUpload(fileList[0]);
+                        const file = fileList[0];
+                        const link = URL.createObjectURL(file);
+                        setPreviewImg(link);
+                      }
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <p
+                    className="my-0 cursor-pointer"
+                    style={{ fontWeight: "bolder" }}
+                    onClick={() => {
+                      setResetPasswordMode(false);
+                    }}
                   >
-                    <div className="font-barlow relative flex w-full items-center justify-center text-center text-lg font-medium text-neutral-white">
-                      Reset
-                    </div>
-                  </button>
-                </Form.Item>
-              </Form>
-              <input
-                ref={fileInputRef}
-                style={{
-                  width: "100%",
-                  cursor: "pointer",
-                  display: "none",
-                }}
-                name="img"
-                placeholder="Select Image"
-                id="imgInp"
-                type="file"
-                onChange={(e) => {
-                  const fileList = e.target.files;
-                  if (fileList && fileList.length > 0) {
-                    setImageUpload(fileList[0]);
-                    const file = fileList[0];
-                    const link = URL.createObjectURL(file);
-                    setPreviewImg(link);
-                  }
-                }}
-              />
+                    {"< "}Back
+                  </p>
+                  <ResetPasswordProfile />
+                </>
+              )}
             </div>
           </div>
         </div>

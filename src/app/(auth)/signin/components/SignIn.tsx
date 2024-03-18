@@ -10,13 +10,38 @@ import FrameComponentSignin from "./frame-component-signin";
 import Loading from "@/components/Loading/Loading";
 import useAppContext from "@/hooks/useAppContext";
 import { PATH_AUTH } from "@/routes/paths";
+import Swal from "sweetalert2";
+import authApi from "@/api/auth/auth";
+import { useAuthGoogle } from "@/contexts/AuthGoogleContext";
 
 const SignIn = (props: {}) => {
   const router = useRouter();
   const formItemLayout = {};
   const [form] = Form.useForm();
-  const { login } = useAuth();
-  const { isLoading } = useAppContext();
+  const { login, loginWithEmail } = useAuth();
+  const { isLoading, enableLoading, disableLoading } = useAppContext();
+  const { googleSignIn, user, logOut } = useAuthGoogle();
+  const handleGoogleSignIn = async () => {
+    try {
+      await googleSignIn();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    logOut();
+  }, []);
+
+  useEffect(() => {
+    if (user?.email && localStorage.getItem("GOOGLE_AUTH_USING")) {
+      enableLoading();
+      loginWithEmail(user?.email);
+    } else if (user?.email && !localStorage.getItem("GOOGLE_AUTH_USING")) {
+      logOut();
+    }
+    localStorage.removeItem("GOOGLE_AUTH_USING");
+  }, [user]);
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -28,6 +53,65 @@ const SignIn = (props: {}) => {
       login(values.email, values.password);
     },
   });
+
+  const handleForgetPassword = () => {
+    Swal.fire({
+      title: `Enter your email`,
+      html: `Please enter email of your account`,
+      input: "email",
+      inputAttributes: {
+        autocapitalize: "off",
+      },
+      showCancelButton: true,
+      showConfirmButton: true,
+      confirmButtonText: "Confirm",
+      allowOutsideClick: false,
+    })
+      .then(async (result) => {
+        if (result.isConfirmed === true) {
+          enableLoading();
+          var email = result.value;
+          authApi
+            .sendEmailForgotPassword(email)
+            .then((response) => {
+              disableLoading();
+              if (!response.data.isSuccess) {
+                Swal.fire({
+                  title: `Sorry`,
+                  html: `We have not found any account with email: </br><strong> ${email}. </strong><br/>
+                Please check your email and try again later.`,
+                  timerProgressBar: true,
+                  showCancelButton: false,
+                  showConfirmButton: true,
+                  confirmButtonText: "Confirm",
+                  showLoaderOnConfirm: true,
+                  allowOutsideClick: false,
+                })
+                  .then((result) => {})
+                  .catch((err) => {});
+              } else if (response.data.isSuccess) {
+                Swal.fire({
+                  title: `Verify your account`,
+                  html: `We have sent a verify link to your email: </br><strong> ${email}. </strong><br/>
+                Please check your mail and follow the instruction to reset password.`,
+                  timerProgressBar: true,
+                  showCancelButton: false,
+                  showConfirmButton: true,
+                  confirmButtonText: "Confirm",
+                  showLoaderOnConfirm: true,
+                  allowOutsideClick: false,
+                })
+                  .then((result) => {})
+                  .catch((err) => {});
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      })
+      .catch((err) => {});
+  };
 
   return (
     <GuestGuard>
@@ -159,6 +243,17 @@ const SignIn = (props: {}) => {
                       </div>
 
                       <Form.Item className="text-center">
+                        <div>
+                          <p
+                            className="cursor-pointer text-end text-blue-500"
+                            style={{ fontWeight: "bolder" }}
+                            onClick={() => {
+                              handleForgetPassword();
+                            }}
+                          >
+                            Forget Password?
+                          </p>
+                        </div>
                         <button
                           type="submit"
                           className="hover:bg-blueviolet mt-3 box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-primary-colour px-5 py-[21px] [border:none]"
@@ -183,7 +278,13 @@ const SignIn = (props: {}) => {
                     <div className="text-neutral-black mq450:gap-[0rem_2.313rem] mq450:pl-[1.25rem] mq450:pr-[1.25rem] mq450:box-border box-border flex w-full max-w-full cursor-pointer flex-row items-center justify-center gap-[0rem_1rem] self-stretch rounded-md bg-neutral-white px-[2.688rem] pb-[1.188rem] pt-[1.313rem] text-center shadow-[0px_4px_10px_rgba(0,_0,_0,_0.08)]">
                       <div className="relative hidden h-[4rem] w-[26.625rem] max-w-full rounded-md bg-neutral-white shadow-[0px_4px_10px_rgba(0,_0,_0,_0.08)]" />
 
-                      <div className="box-border flex flex-row items-center justify-center px-[0rem] pb-[0rem] pt-[0.125rem]">
+                      <div
+                        onClick={() => {
+                          localStorage.setItem("GOOGLE_AUTH_USING", "true");
+                          handleGoogleSignIn();
+                        }}
+                        className="cursor-pointer box-border flex flex-row items-center justify-center px-[0rem] pb-[0rem] pt-[0.125rem]"
+                      >
                         <img
                           className="relative z-[1] h-[1.5rem] min-h-[1.5rem] w-[1.5rem] shrink-0 overflow-hidden"
                           loading="lazy"

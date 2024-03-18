@@ -4,8 +4,9 @@ import { Watermark } from "antd";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import "./index.css";
+import "./index.scss";
 import { getUserAvatar } from "@/utils/useFirebaseStorage";
+import { formatPrice } from "@/utils/formatPrice";
 
 export type Cards1Type = {
   artworkId: string;
@@ -144,7 +145,7 @@ const ArtworkCard: NextPage<Cards1Type> = ({
         </div>
         {translateYNumber != 10 ? (
           <>
-            <div className=" z-[2] flex flex-col items-start justify-center self-stretch py-[0rem] pl-[0rem] pr-[0.063rem] text-[0.988rem] text-whitesmoke">
+            <div className=" z-[2] flex flex-col items-start justify-center self-stretch py-[0rem] pl-[0rem] pr-[0.063rem] text-[0.988rem] text-neutral-white">
               <div className="mq450:flex-wrap flex flex-row items-center justify-between gap-[1.25rem] self-stretch">
                 <div className="flex h-[3.794rem] flex-row items-center justify-center gap-[0rem_0.825rem]">
                   <img
@@ -164,12 +165,14 @@ const ArtworkCard: NextPage<Cards1Type> = ({
                 </div>
                 <div className="flex h-[3.75rem] flex-col items-end justify-center gap-[0.33rem_0rem] text-right">
                   <div className="relative text-[1rem] font-medium line-through">
-                    {discount && price && discount > 0 ? `${price} VND` : ""}
+                    {discount && price && discount > 0
+                      ? `${formatPrice(price)} VND`
+                      : ""}
                   </div>
                   <b className="text-bg mq450:text-[1.188rem] relative text-left text-[1.2rem]">
                     {discount && price && discount > 0
-                      ? price - (price * discount) / 100
-                      : price}{" "}
+                      ? formatPrice(price - (price * discount) / 100)
+                      : formatPrice(price ?? 0)}{" "}
                     VND
                   </b>
                 </div>
