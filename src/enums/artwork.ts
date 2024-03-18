@@ -3,4 +3,5 @@ export enum ArtworkStatus {
     NotAvailable =  "NotAvailable",
     Expired =  "Expired",
     Deleted =  "Deleted",
+    Sold = "Sold"
 }

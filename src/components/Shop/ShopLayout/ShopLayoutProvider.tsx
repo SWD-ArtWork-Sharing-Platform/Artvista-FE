@@ -18,7 +18,7 @@ export default function ShopLayoutComponent({
 
   return (
     <>
-      <div className="mq450:gap-[74px_0px] mq750:gap-[74px_0px] relative flex w-full flex-col items-center justify-start gap-[20px_0px] overflow-hidden bg-neutral-dark tracking-[normal]">
+      <div className="min-h-screen mq450:gap-[74px_0px] mq750:gap-[74px_0px] relative flex w-full flex-col items-center justify-start gap-[20px_0px] overflow-hidden bg-neutral-dark tracking-[normal]">
         <ChattingOfCustomer
           isOpen={chattingOfCustomer}
           chattingOfCustomerId={chattingOfCustomerId}
