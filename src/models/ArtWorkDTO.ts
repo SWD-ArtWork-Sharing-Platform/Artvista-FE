@@ -15,4 +15,3 @@ export interface ArtworkDTO {
     postDTOs?: PostDTO[];
     reportDTOs?: ReportDTO[];
 }
-//
