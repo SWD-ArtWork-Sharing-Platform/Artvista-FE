@@ -1,26 +1,33 @@
 import { useEffect, useState } from "react";
-import { PostDTO } from "@/models/PostDTO";
-import { PostService } from "@/services/PostService";
+import { CategoryDTO } from "@/models/CategoryDTO";
+import { CategoryService } from "@/services/CategoryService";
 import Layout from "@/components/Layout";
 import { Modal, Button, Toast } from "react-bootstrap";
 import Guard from "@/components/Guard";
 
-const Post: React.FC = () => {
-  const [posts, setPosts] = useState<PostDTO[]>([]);
-  const [currentPosts, setCurrentPosts] = useState<PostDTO[]>([]);
+const CategoryPage: React.FC = () => {
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
+  const [currentCategories, setCurrentCategories] = useState<CategoryDTO[]>([]);
 
-  const [editedPost, setEditedPost] = useState<Partial<PostDTO>>({});
+  const [editedCategory, setEditedCategory] = useState<Partial<CategoryDTO>>(
+    {}
+  );
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState<PostDTO>({
-    postId: "string",
-    tittle: "",
-    description: "",
-    status: "Active",
+  const [newCategory, setNewCategory] = useState<CategoryDTO>({
+    categoryId: "string",
+    categoryName: "",
+    updatedDate: "2024-03-12T06:43:45.718Z",
+    updatedBy: "string",
+    type: "",
+    quantity: 0,
+    note: "",
   });
 
-  const [deletePost, setDeletePost] = useState<PostDTO | undefined>(undefined);
+  const [deleteCategory, setDeleteCategory] = useState<CategoryDTO | undefined>(
+    undefined
+  );
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
   const [showToast, setShowToast] = useState(false);
@@ -34,105 +41,104 @@ const Post: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    fetchPosts();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setCurrentPosts(posts.slice(indexOfFirstItem, indexOfLastItem));
+    setCurrentCategories(categories.slice(indexOfFirstItem, indexOfLastItem));
   }, [currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchCategories = async () => {
     try {
-      // Fetch posts from API
-      const response = await PostService.getAllPosts();
+      // Fetch categories from API
+      const response = await CategoryService.getAllCategories();
       if (response.isSuccess && Array.isArray(response.result)) {
-        setPosts(response.result);
+        setCategories(response.result);
         setTotalPages(Math.ceil(response.result.length / itemsPerPage));
         setCurrentPage(1);
       } else {
         console.error("Invalid response format:", response);
       }
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.error("Error fetching categories:", error);
     }
   };
 
-  const handleEdit = (post: PostDTO) => {
-    setEditedPost(post);
+  const handleEdit = (category: CategoryDTO) => {
+    setEditedCategory(category);
     setEditModalOpen(true);
   };
 
   const handleSave = async () => {
     try {
-      const response = await PostService.updatePost(editedPost as PostDTO);
+      const response = await CategoryService.updateCategory(
+        editedCategory as CategoryDTO
+      );
       if (response.isSuccess) {
-        fetchPosts();
+        fetchCategories();
         setEditModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post updated successfully");
+        setToastMessage("Category updated successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error updating post:", response.message);
+        console.error("Error updating category:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to update post");
+        setToastMessage("Failed to update category");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error updating post:", error);
+      console.error("Error updating category:", error);
       setShowToast(true);
-      setToastMessage("Failed to update post");
+      setToastMessage("Failed to update category");
       setToastVariant("danger");
     }
   };
 
   const handleAdd = async () => {
     try {
-      const response = await PostService.createNewPost(newPost);
+      const response = await CategoryService.createNewCategory(newCategory);
       if (response.isSuccess) {
         setAddModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post added successfully");
+        setToastMessage("Category added successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error adding post:", response.message);
+        console.error("Error adding category:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to add post");
+        setToastMessage("Failed to add category");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error adding post:", error);
+      console.error("Error adding category:", error);
       setShowToast(true);
-      setToastMessage("Failed to add post");
+      setToastMessage("Failed to add category");
       setToastVariant("danger");
     }
   };
 
   const handleDelete = async () => {
     try {
-      const response = await PostService.deletePostByID(
-        deletePost?.postId ?? ""
+      const response = await CategoryService.deleteCategoryByID(
+        deleteCategory?.categoryId ?? ""
       );
       if (response.isSuccess) {
-        fetchPosts();
+        fetchCategories();
         setConfirmDeleteModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post deleted successfully");
+        setToastMessage("Category deleted successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error deleting post:", response.message);
+        console.error("Error deleting category:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to delete post");
+        setToastMessage("Failed to delete category");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
+      console.error("Error deleting category:", error);
       setShowToast(true);
-      setToastMessage("Failed to delete post");
+      setToastMessage("Failed to delete category");
       setToastVariant("danger");
     }
   };
@@ -140,7 +146,7 @@ const Post: React.FC = () => {
   return (
     <Layout>
       <div className="container mt-5">
-        <h1 className="mb-4">Post Page</h1>
+        <h1 className="mb-4">Category Page</h1>
         <button
           type="button"
           className="btn btn-primary mt-1 mb-3"
@@ -152,24 +158,22 @@ const Post: React.FC = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Title</th>
-              <th>Description</th>
-              <th>Status</th>
+              <th>Name</th>
+              <th>Type</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {currentPosts.map((post) => (
-              <tr key={post.postId}>
-                <td>{post.postId}</td>
-                <td>{post.tittle}</td>
-                <td>{post.description}</td>
-                <td>{post.status}</td>
+            {currentCategories.map((category) => (
+              <tr key={category.categoryId}>
+                <td>{category.categoryId}</td>
+                <td>{category.categoryName}</td>
+                <td>{category.type}</td>
                 <td>
                   <button
                     type="button"
                     className="btn btn-primary"
-                    onClick={() => handleEdit(post)}
+                    onClick={() => handleEdit(category)}
                   >
                     Edit
                   </button>
@@ -177,7 +181,7 @@ const Post: React.FC = () => {
                     type="button"
                     className="btn btn-danger ms-2"
                     onClick={() => {
-                      setDeletePost(post);
+                      setDeleteCategory(category);
                       setConfirmDeleteModalOpen(true);
                     }}
                   >
@@ -246,96 +250,70 @@ const Post: React.FC = () => {
       {/* Bootstrap Modal for Editing */}
       <Modal show={editModalOpen} onHide={() => setEditModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Post</Modal.Title>
+          <Modal.Title>Edit Category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for editing */}
           <div className="mb-3">
-            <label htmlFor="postId" className="form-label">
-              Post ID
+            <label htmlFor="name" className="form-label">
+              Name
             </label>
             <input
               type="text"
               className="form-control"
-              id="postId"
-              value={editedPost.postId}
+              id="name"
+              value={editedCategory.categoryName}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, postId: e.target.value })
+                setEditedCategory({
+                  ...editedCategory,
+                  categoryName: e.target.value,
+                })
               }
-              readOnly
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="artworkId" className="form-label">
-              Artwork ID
+            <label htmlFor="type" className="form-label">
+              Type
             </label>
             <input
               type="text"
               className="form-control"
-              id="artworkId"
-              value={editedPost.artworkId}
+              id="type"
+              value={editedCategory.type}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, artworkId: e.target.value })
+                setEditedCategory({ ...editedCategory, type: e.target.value })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              Title
+            <label htmlFor="quantity" className="form-label">
+              Quantity
             </label>
             <input
-              type="text"
+              type="number"
               className="form-control"
-              id="title"
-              value={editedPost.tittle}
+              id="quantity"
+              value={editedCategory.quantity}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, tittle: e.target.value })
+                setEditedCategory({
+                  ...editedCategory,
+                  quantity: parseInt(e.target.value),
+                })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="description" className="form-label">
-              Description
+            <label htmlFor="note" className="form-label">
+              Note
             </label>
             <textarea
               className="form-control"
-              id="description"
-              value={editedPost.description}
+              id="note"
+              value={editedCategory.note}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, description: e.target.value })
+                setEditedCategory({ ...editedCategory, note: e.target.value })
               }
             ></textarea>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="createdOn" className="form-label">
-              Created On
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="createdOn"
-              value={editedPost.createdOn}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, createdOn: e.target.value })
-              }
-              readOnly
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="status" className="form-label">
-              Status
-            </label>
-            <select
-              className="form-select"
-              id="status"
-              value={editedPost.status}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, status: e.target.value })
-              }
-            >
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
-            </select>
           </div>
           {/* Add other form fields here */}
         </Modal.Body>
@@ -352,66 +330,67 @@ const Post: React.FC = () => {
       {/* Bootstrap Modal for Adding */}
       <Modal show={addModalOpen} onHide={() => setAddModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Post</Modal.Title>
+          <Modal.Title>Add Category</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for adding */}
           <div className="mb-3">
-            <label htmlFor="artworkId" className="form-label">
-              Artwork ID
+            <label htmlFor="name" className="form-label">
+              Name
             </label>
             <input
               type="text"
               className="form-control"
-              id="artworkId"
-              value={newPost.artworkId}
+              id="name"
+              value={newCategory.categoryName}
               onChange={(e) =>
-                setNewPost({ ...newPost, artworkId: e.target.value })
+                setNewCategory({ ...newCategory, categoryName: e.target.value })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              Title
+            <label htmlFor="type" className="form-label">
+              Type
             </label>
             <input
               type="text"
               className="form-control"
-              id="title"
-              value={newPost.tittle}
+              id="type"
+              value={newCategory.type}
               onChange={(e) =>
-                setNewPost({ ...newPost, tittle: e.target.value })
+                setNewCategory({ ...newCategory, type: e.target.value })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="description" className="form-label">
-              Description
+            <label htmlFor="quantity" className="form-label">
+              Quantity
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="quantity"
+              value={newCategory.quantity}
+              onChange={(e) =>
+                setNewCategory({
+                  ...newCategory,
+                  quantity: parseInt(e.target.value),
+                })
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="note" className="form-label">
+              Note
             </label>
             <textarea
               className="form-control"
-              id="description"
-              value={newPost.description}
+              id="note"
+              value={newCategory.note}
               onChange={(e) =>
-                setNewPost({ ...newPost, description: e.target.value })
+                setNewCategory({ ...newCategory, note: e.target.value })
               }
             ></textarea>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="status" className="form-label">
-              Status
-            </label>
-            <select
-              className="form-select"
-              id="status"
-              value={newPost.status}
-              onChange={(e) =>
-                setNewPost({ ...newPost, status: e.target.value })
-              }
-            >
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
-            </select>
           </div>
           {/* Add other form fields here */}
         </Modal.Body>
@@ -420,7 +399,7 @@ const Post: React.FC = () => {
             Close
           </Button>
           <Button variant="primary" onClick={handleAdd}>
-            Add Post
+            Add Category
           </Button>
         </Modal.Footer>
       </Modal>
@@ -433,7 +412,7 @@ const Post: React.FC = () => {
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this post?</Modal.Body>
+        <Modal.Body>Are you sure you want to delete this category?</Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
@@ -475,4 +454,5 @@ const Post: React.FC = () => {
   );
 };
 
-export default Guard(Post);
+export default Guard(CategoryPage);
+

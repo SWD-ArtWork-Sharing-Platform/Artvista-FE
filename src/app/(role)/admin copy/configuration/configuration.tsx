@@ -1,26 +1,33 @@
 import { useEffect, useState } from "react";
-import { PostDTO } from "@/models/PostDTO";
-import { PostService } from "@/services/PostService";
+import { ConfigurationDTO } from "@/models/ConfigurationDTO";
+import { ConfigurationService } from "@/services/ConfigurationService";
 import Layout from "@/components/Layout";
 import { Modal, Button, Toast } from "react-bootstrap";
 import Guard from "@/components/Guard";
 
-const Post: React.FC = () => {
-  const [posts, setPosts] = useState<PostDTO[]>([]);
-  const [currentPosts, setCurrentPosts] = useState<PostDTO[]>([]);
+const Home: React.FC = () => {
+  const [configurations, setConfigurations] = useState<ConfigurationDTO[]>([]);
+  const [currentConfigurations, setCurrentConfigurations] = useState<
+    ConfigurationDTO[]
+  >([]);
 
-  const [editedPost, setEditedPost] = useState<Partial<PostDTO>>({});
+  const [editedConfiguration, setEditedConfiguration] = useState<
+    Partial<ConfigurationDTO>
+  >({});
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState<PostDTO>({
-    postId: "string",
-    tittle: "",
-    description: "",
+  const [newConfiguration, setNewConfiguration] = useState<ConfigurationDTO>({
+    commisionFee: 0,
+    appliedDate: "2024-02-28T00:00:00",
     status: "Active",
+    configurationId: "string",
+    id: "string",
   });
 
-  const [deletePost, setDeletePost] = useState<PostDTO | undefined>(undefined);
+  const [deleteConfiguration, setDeleteConfiguration] = useState<
+    ConfigurationDTO | undefined
+  >(undefined);
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
   const [showToast, setShowToast] = useState(false);
@@ -34,105 +41,108 @@ const Post: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    fetchPosts();
+    fetchConfigurations();
   }, []);
 
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setCurrentPosts(posts.slice(indexOfFirstItem, indexOfLastItem));
+    setCurrentConfigurations(
+      configurations.slice(indexOfFirstItem, indexOfLastItem)
+    );
   }, [currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchConfigurations = async () => {
     try {
-      // Fetch posts from API
-      const response = await PostService.getAllPosts();
+      // Fetch configurations from API
+      const response = await ConfigurationService.getAllConfigurations();
       if (response.isSuccess && Array.isArray(response.result)) {
-        setPosts(response.result);
+        setConfigurations(response.result);
         setTotalPages(Math.ceil(response.result.length / itemsPerPage));
         setCurrentPage(1);
       } else {
         console.error("Invalid response format:", response);
       }
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.error("Error fetching configurations:", error);
     }
   };
 
-  const handleEdit = (post: PostDTO) => {
-    setEditedPost(post);
+  const handleEdit = (configuration: ConfigurationDTO) => {
+    setEditedConfiguration(configuration);
     setEditModalOpen(true);
   };
 
   const handleSave = async () => {
     try {
-      const response = await PostService.updatePost(editedPost as PostDTO);
+      const response = await ConfigurationService.updateConfiguration(
+        editedConfiguration as ConfigurationDTO
+      );
       if (response.isSuccess) {
-        fetchPosts();
+        fetchConfigurations();
         setEditModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post updated successfully");
+        setToastMessage("Configuration updated successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error updating post:", response.message);
+        console.error("Error updating configuration:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to update post");
+        setToastMessage(response.message || "Failed to update configuration");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error updating post:", error);
+      console.error("Error updating configuration:", error);
       setShowToast(true);
-      setToastMessage("Failed to update post");
+      setToastMessage("Failed to update configuration");
       setToastVariant("danger");
     }
   };
 
   const handleAdd = async () => {
     try {
-      const response = await PostService.createNewPost(newPost);
+      const response =
+        await ConfigurationService.createNewConfiguration(newConfiguration);
       if (response.isSuccess) {
         setAddModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post added successfully");
+        setToastMessage("Configuration added successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error adding post:", response.message);
+        console.error("Error adding configuration:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to add post");
+        setToastMessage(response.message || "Failed to add configuration");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error adding post:", error);
+      console.error("Error adding configuration:", error);
       setShowToast(true);
-      setToastMessage("Failed to add post");
+      setToastMessage("Failed to add configuration");
       setToastVariant("danger");
     }
   };
 
   const handleDelete = async () => {
     try {
-      const response = await PostService.deletePostByID(
-        deletePost?.postId ?? ""
+      const response = await ConfigurationService.deleteConfigurationByID(
+        deleteConfiguration?.id ?? "",
+        true
       );
       if (response.isSuccess) {
-        fetchPosts();
+        fetchConfigurations();
         setConfirmDeleteModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post deleted successfully");
+        setToastMessage("Configuration deleted successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error deleting post:", response.message);
+        console.error("Error deleting configuration:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to delete post");
+        setToastMessage(response.message || "Failed to delete configuration");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
+      console.error("Error deleting configuration:", error);
       setShowToast(true);
-      setToastMessage("Failed to delete post");
+      setToastMessage("Failed to delete configuration");
       setToastVariant("danger");
     }
   };
@@ -140,7 +150,7 @@ const Post: React.FC = () => {
   return (
     <Layout>
       <div className="container mt-5">
-        <h1 className="mb-4">Post Page</h1>
+        <h1 className="mb-4">Configuration Page</h1>
         <button
           type="button"
           className="btn btn-primary mt-1 mb-3"
@@ -152,24 +162,24 @@ const Post: React.FC = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Title</th>
-              <th>Description</th>
+              <th>Commission Fee</th>
+              <th>Applied Date</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {currentPosts.map((post) => (
-              <tr key={post.postId}>
-                <td>{post.postId}</td>
-                <td>{post.tittle}</td>
-                <td>{post.description}</td>
-                <td>{post.status}</td>
+            {currentConfigurations.map((config) => (
+              <tr key={config.configurationId}>
+                <td>{config.configurationId}</td>
+                <td>{config.commisionFee}</td>
+                <td>{config.appliedDate}</td>
+                <td>{config.status}</td>
                 <td>
                   <button
                     type="button"
                     className="btn btn-primary"
-                    onClick={() => handleEdit(post)}
+                    onClick={() => handleEdit(config)}
                   >
                     Edit
                   </button>
@@ -177,7 +187,7 @@ const Post: React.FC = () => {
                     type="button"
                     className="btn btn-danger ms-2"
                     onClick={() => {
-                      setDeletePost(post);
+                      setDeleteConfiguration(config);
                       setConfirmDeleteModalOpen(true);
                     }}
                   >
@@ -246,79 +256,42 @@ const Post: React.FC = () => {
       {/* Bootstrap Modal for Editing */}
       <Modal show={editModalOpen} onHide={() => setEditModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Post</Modal.Title>
+          <Modal.Title>Edit Configuration</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for editing */}
           <div className="mb-3">
-            <label htmlFor="postId" className="form-label">
-              Post ID
+            <label htmlFor="commissionFee" className="form-label">
+              Commission Fee
             </label>
             <input
-              type="text"
+              type="number"
               className="form-control"
-              id="postId"
-              value={editedPost.postId}
+              id="commissionFee"
+              value={editedConfiguration.commisionFee}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, postId: e.target.value })
-              }
-              readOnly
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="artworkId" className="form-label">
-              Artwork ID
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="artworkId"
-              value={editedPost.artworkId}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, artworkId: e.target.value })
+                setEditedConfiguration({
+                  ...editedConfiguration,
+                  commisionFee: parseInt(e.target.value),
+                })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              Title
+            <label htmlFor="appliedDate" className="form-label">
+              Applied Date
             </label>
             <input
-              type="text"
+              type="date"
               className="form-control"
-              id="title"
-              value={editedPost.tittle}
+              id="appliedDate"
+              value={editedConfiguration.appliedDate}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, tittle: e.target.value })
+                setEditedConfiguration({
+                  ...editedConfiguration,
+                  appliedDate: e.target.value,
+                })
               }
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="description" className="form-label">
-              Description
-            </label>
-            <textarea
-              className="form-control"
-              id="description"
-              value={editedPost.description}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, description: e.target.value })
-              }
-            ></textarea>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="createdOn" className="form-label">
-              Created On
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="createdOn"
-              value={editedPost.createdOn}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, createdOn: e.target.value })
-              }
-              readOnly
             />
           </div>
           <div className="mb-3">
@@ -328,13 +301,16 @@ const Post: React.FC = () => {
             <select
               className="form-select"
               id="status"
-              value={editedPost.status}
+              value={editedConfiguration.status}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, status: e.target.value })
+                setEditedConfiguration({
+                  ...editedConfiguration,
+                  status: e.target.value,
+                })
               }
             >
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
             </select>
           </div>
           {/* Add other form fields here */}
@@ -352,50 +328,43 @@ const Post: React.FC = () => {
       {/* Bootstrap Modal for Adding */}
       <Modal show={addModalOpen} onHide={() => setAddModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Post</Modal.Title>
+          <Modal.Title>Add Configuration</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for adding */}
           <div className="mb-3">
-            <label htmlFor="artworkId" className="form-label">
-              Artwork ID
+            <label htmlFor="commissionFee" className="form-label">
+              Commission Fee
             </label>
             <input
-              type="text"
+              type="number"
               className="form-control"
-              id="artworkId"
-              value={newPost.artworkId}
+              id="commissionFee"
+              value={newConfiguration.commisionFee}
               onChange={(e) =>
-                setNewPost({ ...newPost, artworkId: e.target.value })
+                setNewConfiguration({
+                  ...newConfiguration,
+                  commisionFee: parseInt(e.target.value),
+                })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              Title
+            <label htmlFor="appliedDate" className="form-label">
+              Applied Date
             </label>
             <input
-              type="text"
+              type="date"
               className="form-control"
-              id="title"
-              value={newPost.tittle}
+              id="appliedDate"
+              value={newConfiguration.appliedDate}
               onChange={(e) =>
-                setNewPost({ ...newPost, tittle: e.target.value })
+                setNewConfiguration({
+                  ...newConfiguration,
+                  appliedDate: e.target.value,
+                })
               }
             />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="description" className="form-label">
-              Description
-            </label>
-            <textarea
-              className="form-control"
-              id="description"
-              value={newPost.description}
-              onChange={(e) =>
-                setNewPost({ ...newPost, description: e.target.value })
-              }
-            ></textarea>
           </div>
           <div className="mb-3">
             <label htmlFor="status" className="form-label">
@@ -404,13 +373,16 @@ const Post: React.FC = () => {
             <select
               className="form-select"
               id="status"
-              value={newPost.status}
+              value={newConfiguration.status}
               onChange={(e) =>
-                setNewPost({ ...newPost, status: e.target.value })
+                setNewConfiguration({
+                  ...newConfiguration,
+                  status: e.target.value,
+                })
               }
             >
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
             </select>
           </div>
           {/* Add other form fields here */}
@@ -420,7 +392,7 @@ const Post: React.FC = () => {
             Close
           </Button>
           <Button variant="primary" onClick={handleAdd}>
-            Add Post
+            Add Configuration
           </Button>
         </Modal.Footer>
       </Modal>
@@ -433,7 +405,9 @@ const Post: React.FC = () => {
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this post?</Modal.Body>
+        <Modal.Body>
+          Are you sure you want to delete this configuration?
+        </Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
@@ -475,4 +449,4 @@ const Post: React.FC = () => {
   );
 };
 
-export default Guard(Post);
+export default Guard(Home);

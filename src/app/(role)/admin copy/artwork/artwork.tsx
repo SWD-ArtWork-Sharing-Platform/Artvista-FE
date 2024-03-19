@@ -1,26 +1,28 @@
-import { useEffect, useState } from "react";
-import { PostDTO } from "@/models/PostDTO";
-import { PostService } from "@/services/PostService";
+import React, { useEffect, useState } from "react";
+import { ArtworkDTO } from "@/models/ArtWorkDTO";
+import { ArtWorkService } from "@/services/ArtWorkService";
 import Layout from "@/components/Layout";
 import { Modal, Button, Toast } from "react-bootstrap";
 import Guard from "@/components/Guard";
 
-const Post: React.FC = () => {
-  const [posts, setPosts] = useState<PostDTO[]>([]);
-  const [currentPosts, setCurrentPosts] = useState<PostDTO[]>([]);
+const Artwork: React.FC = () => {
+  const [artworks, setArtworks] = useState<ArtworkDTO[]>([]);
+  const [currentArtworks, setCurrentArtworks] = useState<ArtworkDTO[]>([]);
 
-  const [editedPost, setEditedPost] = useState<Partial<PostDTO>>({});
+  const [editedArtwork, setEditedArtwork] = useState<Partial<ArtworkDTO>>({});
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [newPost, setNewPost] = useState<PostDTO>({
-    postId: "string",
-    tittle: "",
-    description: "",
+  const [newArtwork, setNewArtwork] = useState<ArtworkDTO>({
+    artworkName: "",
+    price: 0,
+    discount: 0,
     status: "Active",
   });
 
-  const [deletePost, setDeletePost] = useState<PostDTO | undefined>(undefined);
+  const [deleteArtwork, setDeleteArtwork] = useState<ArtworkDTO | undefined>(
+    undefined
+  );
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
   const [showToast, setShowToast] = useState(false);
@@ -34,105 +36,105 @@ const Post: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    fetchPosts();
+    fetchArtworks();
   }, []);
 
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setCurrentPosts(posts.slice(indexOfFirstItem, indexOfLastItem));
+    setCurrentArtworks(artworks.slice(indexOfFirstItem, indexOfLastItem));
   }, [currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchArtworks = async () => {
     try {
-      // Fetch posts from API
-      const response = await PostService.getAllPosts();
+      // Fetch artworks from API
+      const response = await ArtWorkService.getAllArtworks();
       if (response.isSuccess && Array.isArray(response.result)) {
-        setPosts(response.result);
+        setArtworks(response.result);
         setTotalPages(Math.ceil(response.result.length / itemsPerPage));
         setCurrentPage(1);
       } else {
         console.error("Invalid response format:", response);
       }
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      console.error("Error fetching artworks:", error);
     }
   };
 
-  const handleEdit = (post: PostDTO) => {
-    setEditedPost(post);
+  const handleEdit = (artwork: ArtworkDTO) => {
+    setEditedArtwork(artwork);
     setEditModalOpen(true);
   };
 
   const handleSave = async () => {
     try {
-      const response = await PostService.updatePost(editedPost as PostDTO);
+      const response = await ArtWorkService.updateArtwork(
+        editedArtwork as ArtworkDTO
+      );
       if (response.isSuccess) {
-        fetchPosts();
+        fetchArtworks();
         setEditModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post updated successfully");
+        setToastMessage("Artwork updated successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error updating post:", response.message);
+        console.error("Error updating artwork:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to update post");
+        setToastMessage("Failed to update artwork");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error updating post:", error);
+      console.error("Error updating artwork:", error);
       setShowToast(true);
-      setToastMessage("Failed to update post");
+      setToastMessage("Failed to update artwork");
       setToastVariant("danger");
     }
   };
 
   const handleAdd = async () => {
     try {
-      const response = await PostService.createNewPost(newPost);
+      const response = await ArtWorkService.createNewArtwork(newArtwork);
       if (response.isSuccess) {
         setAddModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post added successfully");
+        setToastMessage("Artwork added successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error adding post:", response.message);
+        console.error("Error adding artwork:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to add post");
+        setToastMessage("Failed to add artwork");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error adding post:", error);
+      console.error("Error adding artwork:", error);
       setShowToast(true);
-      setToastMessage("Failed to add post");
+      setToastMessage("Failed to add artwork");
       setToastVariant("danger");
     }
   };
 
   const handleDelete = async () => {
     try {
-      const response = await PostService.deletePostByID(
-        deletePost?.postId ?? ""
+      const response = await ArtWorkService.deleteArtworkByID(
+        deleteArtwork?.artworkId ?? "",
+        true
       );
       if (response.isSuccess) {
-        fetchPosts();
+        fetchArtworks();
         setConfirmDeleteModalOpen(false);
         setShowToast(true);
-        setToastMessage("Post deleted successfully");
+        setToastMessage("Artwork deleted successfully");
         setToastVariant("success");
-        fetchPosts();
       } else {
-        console.error("Error deleting post:", response.message);
+        console.error("Error deleting artwork:", response.message);
         setShowToast(true);
-        setToastMessage("Failed to delete post");
+        setToastMessage("Failed to delete artwork");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error deleting post:", error);
+      console.error("Error deleting artwork:", error);
       setShowToast(true);
-      setToastMessage("Failed to delete post");
+      setToastMessage("Failed to delete artwork");
       setToastVariant("danger");
     }
   };
@@ -140,7 +142,7 @@ const Post: React.FC = () => {
   return (
     <Layout>
       <div className="container mt-5">
-        <h1 className="mb-4">Post Page</h1>
+        <h1 className="mb-4">Artwork Page</h1>
         <button
           type="button"
           className="btn btn-primary mt-1 mb-3"
@@ -152,24 +154,26 @@ const Post: React.FC = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Title</th>
-              <th>Description</th>
+              <th>Artwork Name</th>
+              <th>Price</th>
+              <th>Discount</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {currentPosts.map((post) => (
-              <tr key={post.postId}>
-                <td>{post.postId}</td>
-                <td>{post.tittle}</td>
-                <td>{post.description}</td>
-                <td>{post.status}</td>
+            {currentArtworks.map((artwork) => (
+              <tr key={artwork.artworkId}>
+                <td>{artwork.artworkId}</td>
+                <td>{artwork.artworkName}</td>
+                <td>{artwork.price}</td>
+                <td>{artwork.discount}</td>
+                <td>{artwork.status}</td>
                 <td>
                   <button
                     type="button"
                     className="btn btn-primary"
-                    onClick={() => handleEdit(post)}
+                    onClick={() => handleEdit(artwork)}
                   >
                     Edit
                   </button>
@@ -177,7 +181,7 @@ const Post: React.FC = () => {
                     type="button"
                     className="btn btn-danger ms-2"
                     onClick={() => {
-                      setDeletePost(post);
+                      setDeleteArtwork(artwork);
                       setConfirmDeleteModalOpen(true);
                     }}
                   >
@@ -246,25 +250,10 @@ const Post: React.FC = () => {
       {/* Bootstrap Modal for Editing */}
       <Modal show={editModalOpen} onHide={() => setEditModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Post</Modal.Title>
+          <Modal.Title>Edit Artwork</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for editing */}
-          <div className="mb-3">
-            <label htmlFor="postId" className="form-label">
-              Post ID
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="postId"
-              value={editedPost.postId}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, postId: e.target.value })
-              }
-              readOnly
-            />
-          </div>
           <div className="mb-3">
             <label htmlFor="artworkId" className="form-label">
               Artwork ID
@@ -273,52 +262,65 @@ const Post: React.FC = () => {
               type="text"
               className="form-control"
               id="artworkId"
-              value={editedPost.artworkId}
+              value={editedArtwork.artworkId}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, artworkId: e.target.value })
-              }
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              Title
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="title"
-              value={editedPost.tittle}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, tittle: e.target.value })
-              }
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="description" className="form-label">
-              Description
-            </label>
-            <textarea
-              className="form-control"
-              id="description"
-              value={editedPost.description}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, description: e.target.value })
-              }
-            ></textarea>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="createdOn" className="form-label">
-              Created On
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              id="createdOn"
-              value={editedPost.createdOn}
-              onChange={(e) =>
-                setEditedPost({ ...editedPost, createdOn: e.target.value })
+                setEditedArtwork({
+                  ...editedArtwork,
+                  artworkId: e.target.value,
+                })
               }
               readOnly
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="artworkName" className="form-label">
+              Artwork Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="artworkName"
+              value={editedArtwork.artworkName}
+              onChange={(e) =>
+                setEditedArtwork({
+                  ...editedArtwork,
+                  artworkName: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="price" className="form-label">
+              Price
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="price"
+              value={editedArtwork.price}
+              onChange={(e) =>
+                setEditedArtwork({
+                  ...editedArtwork,
+                  price: parseFloat(e.target.value),
+                })
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="discount" className="form-label">
+              Discount
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="discount"
+              value={editedArtwork.discount}
+              onChange={(e) =>
+                setEditedArtwork({
+                  ...editedArtwork,
+                  discount: parseFloat(e.target.value),
+                })
+              }
             />
           </div>
           <div className="mb-3">
@@ -328,13 +330,13 @@ const Post: React.FC = () => {
             <select
               className="form-select"
               id="status"
-              value={editedPost.status}
+              value={editedArtwork.status}
               onChange={(e) =>
-                setEditedPost({ ...editedPost, status: e.target.value })
+                setEditedArtwork({ ...editedArtwork, status: e.target.value })
               }
             >
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
+              <option value="Available">Available</option>
+              <option value="Sold">Sold</option>
             </select>
           </div>
           {/* Add other form fields here */}
@@ -352,50 +354,57 @@ const Post: React.FC = () => {
       {/* Bootstrap Modal for Adding */}
       <Modal show={addModalOpen} onHide={() => setAddModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Post</Modal.Title>
+          <Modal.Title>Add Artwork</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for adding */}
           <div className="mb-3">
-            <label htmlFor="artworkId" className="form-label">
-              Artwork ID
+            <label htmlFor="artworkName" className="form-label">
+              Artwork Name
             </label>
             <input
               type="text"
               className="form-control"
-              id="artworkId"
-              value={newPost.artworkId}
+              id="artworkName"
+              value={newArtwork.artworkName}
               onChange={(e) =>
-                setNewPost({ ...newPost, artworkId: e.target.value })
+                setNewArtwork({ ...newArtwork, artworkName: e.target.value })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="title" className="form-label">
-              Title
+            <label htmlFor="price" className="form-label">
+              Price
             </label>
             <input
-              type="text"
+              type="number"
               className="form-control"
-              id="title"
-              value={newPost.tittle}
+              id="price"
+              value={newArtwork.price}
               onChange={(e) =>
-                setNewPost({ ...newPost, tittle: e.target.value })
+                setNewArtwork({
+                  ...newArtwork,
+                  price: parseFloat(e.target.value),
+                })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="description" className="form-label">
-              Description
+            <label htmlFor="discount" className="form-label">
+              Discount
             </label>
-            <textarea
+            <input
+              type="number"
               className="form-control"
-              id="description"
-              value={newPost.description}
+              id="discount"
+              value={newArtwork.discount}
               onChange={(e) =>
-                setNewPost({ ...newPost, description: e.target.value })
+                setNewArtwork({
+                  ...newArtwork,
+                  discount: parseFloat(e.target.value),
+                })
               }
-            ></textarea>
+            />
           </div>
           <div className="mb-3">
             <label htmlFor="status" className="form-label">
@@ -404,13 +413,13 @@ const Post: React.FC = () => {
             <select
               className="form-select"
               id="status"
-              value={newPost.status}
+              value={newArtwork.status}
               onChange={(e) =>
-                setNewPost({ ...newPost, status: e.target.value })
+                setNewArtwork({ ...newArtwork, status: e.target.value })
               }
             >
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
+              <option value="Available">Available</option>
+              <option value="Sold">Sold</option>
             </select>
           </div>
           {/* Add other form fields here */}
@@ -420,7 +429,7 @@ const Post: React.FC = () => {
             Close
           </Button>
           <Button variant="primary" onClick={handleAdd}>
-            Add Post
+            Add Artwork
           </Button>
         </Modal.Footer>
       </Modal>
@@ -433,7 +442,7 @@ const Post: React.FC = () => {
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this post?</Modal.Body>
+        <Modal.Body>Are you sure you want to delete this artwork?</Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
@@ -475,4 +484,4 @@ const Post: React.FC = () => {
   );
 };
 
-export default Guard(Post);
+export default Guard(Artwork);
