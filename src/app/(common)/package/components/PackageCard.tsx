@@ -5,6 +5,13 @@ import { useEffect, useState } from "react";
 import "./index.scss";
 import { getUserAvatar } from "@/utils/useFirebaseStorage";
 import { formatPrice } from "@/utils/formatPrice";
+import { PackageMarketDTO } from "@/types/market/PackageMarketDTO";
+import { v4 } from "uuid";
+import packagePurchaseMarketApi from "@/api/market/packagePurchase";
+import { getUserInfoId } from "@/utils/utils";
+import sweetAlert from "@/utils/sweetAlert";
+import Swal from "sweetalert2";
+import useAppContext from "@/hooks/useAppContext";
 
 export type PackageCardType = {
   packageId: string;
@@ -24,6 +31,74 @@ const PackageCard: NextPage<PackageCardType> = ({
   packageTime,
 }) => {
   const router = useRouter();
+  const [paymentUrl, setPaymentUrl] = useState<string>("");
+  const { isLoading, enableLoading, disableLoading } = useAppContext();
+
+  const handleBuyPackage = () => {
+    console.log({
+      packageId: packageId,
+      id: getUserInfoId(),
+      price: price - (price * discount) / 100,
+    });
+
+    enableLoading();
+    packagePurchaseMarketApi
+      .buyPackage(packageId, getUserInfoId(), price - (price * discount) / 100)
+      .then((response) => {
+        console.log(response);
+        if (response.data.isSuccess) {
+          packagePurchaseMarketApi
+            .createPaymentPackage(
+              packageId,
+              getUserInfoId(),
+              price - (price * discount) / 100
+            )
+            .then((response) => {
+              console.log(response);
+              if (response.data.url && response.data.url != "") {
+                Swal.fire({
+                  icon: "info",
+                  title: `Create Purchase Request Successfully`,
+                  html: `Please checkout immediately to get your package now.</br>
+                  After checkout, please click the button below to continue.`,
+                  timerProgressBar: true,
+                  showCancelButton: false,
+                  showConfirmButton: true,
+                  confirmButtonText: "Click here to continue",
+                  showLoaderOnConfirm: true,
+                  allowOutsideClick: false,
+                }).then((result) => {});
+                window.open(response.data.url);
+                setPaymentUrl(response.data.url);
+              } else {
+                sweetAlert.alertFailed(
+                  "Request to pay failed",
+                  "Please try again later. We are sorry.",
+                  3000,
+                  30
+                );
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              sweetAlert.alertFailed(
+                "Request to pay failed",
+                "Please try again later. We are sorry.",
+                3000,
+                30
+              );
+            });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        disableLoading();
+      });
+  };
+
+  const checkCurrentPackage = () => {};
 
   return (
     <div
@@ -37,19 +112,19 @@ const PackageCard: NextPage<PackageCardType> = ({
         >
           <h5
             style={{ borderRadius: "5px", fontWeight: "bolder" }}
-            className="bg-white inline-block text-purple-900 px-4 py-1"
+            className="mt-5 bg-white inline-block text-purple-900 px-4 py-1"
           >
             {discount > 0 ? `Save ${discount}%` : "Good Package"}
           </h5>
           <h1
             style={{ fontSize: "2rem", fontWeight: "bolder" }}
-            className="my-2"
+            className="my-2 mt-4"
           >
             {packageName}
           </h1>
-          <h4 style={{ fontSize: "1.5rem", fontWeight: "bolder" }}>
+          <h4 style={{ fontSize: "2.2rem", fontWeight: "bolder" }}>
             {formatPrice(price - (price * discount) / 100)}
-            {" VND"}
+            <span className="text-[1rem]">{"/VND"}</span>
           </h4>
         </div>
         <div
@@ -71,14 +146,17 @@ const PackageCard: NextPage<PackageCardType> = ({
               </li>
               {packageTime ? (
                 <li className="mb-3">
-                  <p className="lists line-through">Time: {packageTime}</p>
+                  <p className="lists">Time: {packageTime}</p>
                 </li>
               ) : (
                 <></>
               )}
             </ul>
             <div
-              className="header_links_hover cursor-pointer mt-4 mb-3 py-3 px-1 buy-button bg-purple-900"
+              onClick={() => {
+                handleBuyPackage();
+              }}
+              className="cursor-pointer mb-6 header_links_hover mt-4 py-3 px-1 buy-button bg-purple-900"
               style={{ borderRadius: "5px" }}
             >
               <a className=" popup btn btn-style btn-primary " href="#buy">

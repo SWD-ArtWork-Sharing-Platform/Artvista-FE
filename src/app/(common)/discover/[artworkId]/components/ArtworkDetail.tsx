@@ -4,9 +4,11 @@ import categoryManagementApi from "@/api/management/category";
 import interactionManagementApi from "@/api/management/interaction";
 import postManagementApi from "@/api/management/post";
 import artworkMarketApi from "@/api/market/artwork";
+import orderMarketApi from "@/api/market/order";
 import wishlistMarketApi from "@/api/market/wishlist";
 import Loading from "@/components/Loading/Loading";
 import { Role } from "@/enums/accountRole";
+import { OrderStatus } from "@/enums/order";
 import useAppContext from "@/hooks/useAppContext";
 import { PATH_CREATOR, PATH_SHOP } from "@/routes/paths";
 import { InteractionManagementDTO } from "@/types/management/InteractionManagementDTO";
@@ -18,7 +20,8 @@ import sweetAlert from "@/utils/sweetAlert";
 import { getUserInfo, getUserInfoId } from "@/utils/utils";
 import { Watermark } from "antd";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
 import { v4 } from "uuid";
 
 const ArtworkDetail = (props: {}) => {
@@ -27,6 +30,8 @@ const ArtworkDetail = (props: {}) => {
   const [artworkDetail, setArtworkDetail] = useState<ArtworkDTO | null>(null);
   const [post, setPost] = useState<PostManagementDTO | null>(null);
   const [artworkCategory, setArtworkCategory] = useState<any>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string>("");
+  const [isPurchased, setIsPurchased] = useState<boolean>(false);
   const [allInteractionOfPostQuantity, setAllInterctionOfPostQuantity] =
     useState<number>(0);
   const [allInteractionList, setAllInteractionList] = useState<
@@ -38,6 +43,7 @@ const ArtworkDetail = (props: {}) => {
   const [interactionOfUser, setInteractionOfUser] = useState<
     InteractionManagementDTO[] | null
   >(null);
+  const [finishRendering, setFinishRendering] = useState<boolean>(false);
   const {
     isLoading,
     enableLoading,
@@ -53,7 +59,7 @@ const ArtworkDetail = (props: {}) => {
     wishlistMarketApi
       .getWishList(getUserInfoId())
       .then((response) => {
-        if (response.data.isSuccess) {
+        if (response.data.isSuccess && response.data.result) {
           const uniqueArtworkIds = Array.from(
             new Set(
               response.data.result.details.map(
@@ -217,6 +223,58 @@ const ArtworkDetail = (props: {}) => {
       });
   };
 
+  const checkIsPurchasedYet = (artworkId: string) => {
+    setFinishRendering(false);
+    enableLoading();
+    const userLoginId = getUserInfoId();
+    if (userLoginId) {
+      var orderList: any[] = [];
+      orderMarketApi
+        .getHistoryOrder(userLoginId)
+        .then((response) => {
+          if (response.data.isSuccess && response.data.result) {
+            orderList = response.data.result;
+            var index = 0;
+            orderList.forEach((order) => {
+              index++;
+              if (order.orderStatus == OrderStatus.SUCCESS_PAY_VNPAY) {
+                orderMarketApi
+                  .getOrderByOrderId(order.orderId)
+                  .then((response) => {
+                    if (
+                      response.data.result.orderDetails[0].artworkId
+                        .artworkId == artworkId
+                    ) {
+                      setIsPurchased(true);
+                    }
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  })
+                  .finally(() => {
+                    if (index == orderList.length) {
+                      setFinishRendering(true);
+                      disableLoading();
+                    }
+                  });
+              }
+            });
+          } else {
+            setFinishRendering(true);
+            disableLoading();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          setFinishRendering(true);
+        })
+        .finally(() => {
+          setFinishRendering(true);
+          disableLoading();
+        });
+    }
+  };
+
   const handleLikePost = () => {
     setAllInterctionOfPostQuantity((prev) => prev + 1);
     var interactionList = [...allInteractionList];
@@ -301,6 +359,70 @@ const ArtworkDetail = (props: {}) => {
       });
   };
 
+  const handleCreateOrderPurcahseNow = (total: number, artwork: ArtworkDTO) => {
+    enableLoading();
+    const orderId = v4();
+    orderMarketApi
+      .createOrder(orderId, total, artwork)
+      .then((response) => {
+        console.log(response);
+        if (response.data.isSuccess) {
+          orderMarketApi
+            .CreatePaymentUrl(
+              orderId,
+              getUserInfoId(),
+              "1",
+              OrderStatus.PENDING_PAY_VNPAY,
+              total
+            )
+            .then((response) => {
+              if (response.data.url && response.data.url != "") {
+                disableLoading();
+                Swal.fire({
+                  icon: "info",
+                  title: `Create Purchase Request Successfully`,
+                  html: `Please checkout immediately to get your favorite art.</br>
+                  After checkout, please click the button below to continue.`,
+                  timerProgressBar: true,
+                  showCancelButton: false,
+                  showConfirmButton: true,
+                  confirmButtonText: "Click here to continue",
+                  showLoaderOnConfirm: true,
+                  allowOutsideClick: false,
+                })
+                  .then((result) => {
+                    if (artworkDetail) {
+                      checkIsPurchasedYet(artworkDetail?.artworkId);
+                    }
+                  })
+                  .catch((err) => {});
+                setPaymentUrl(response.data.url);
+                window.open(response.data.url);
+              } else {
+                sweetAlert.alertFailed(
+                  "Request to pay failed",
+                  "Please try again later. We are sorry.",
+                  3000,
+                  30
+                );
+              }
+            });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        sweetAlert.alertFailed(
+          "Request to pay failed",
+          "Please try again later. We are sorry.",
+          3000,
+          30
+        );
+      })
+      .finally(() => {
+        disableLoading();
+      });
+  };
+
   useEffect(() => {
     renderArtworkDetail();
     renderPost();
@@ -315,7 +437,19 @@ const ArtworkDetail = (props: {}) => {
   }, []);
 
   useEffect(() => {
-    renderCategory();
+    if (artworkDetail) {
+      renderCategory();
+      if (getUserInfo()) {
+        const user = JSON.parse(getUserInfo() ?? "");
+        if (user.role.filter((r: any) => r == Role.CUSTOMER)) {
+          checkIsPurchasedYet(artworkDetail.artworkId);
+        } else {
+          setFinishRendering(true);
+        }
+      } else {
+        setFinishRendering(true);
+      }
+    }
   }, [artworkDetail]);
 
   if (artworkDetail == null || post == null) {
@@ -326,7 +460,7 @@ const ArtworkDetail = (props: {}) => {
     );
   }
 
-  if (uniqueArtworkIds == null) {
+  if (!finishRendering) {
     return <></>;
   }
 
@@ -453,54 +587,55 @@ const ArtworkDetail = (props: {}) => {
                   </div> */}
                 </div>
                 <div className="mq450:text-[1rem] mq450:leading-[1.063rem] relative font-semibold leading-[1.313rem] text-primary-colour">
-                  {artworkDetail.discount &&
-                  artworkDetail.price &&
-                  artworkDetail.discount > 0
-                    ? formatPrice(
-                        artworkDetail.price -
-                          (artworkDetail.price * artworkDetail.discount) / 100
-                      )
-                    : formatPrice(artworkDetail.price)}{" "}
-                  VND
-                  <span className="ml-2 text-grey line-through">
-                    {artworkDetail.discount &&
-                    artworkDetail.price &&
-                    artworkDetail.discount > 0
-                      ? `${formatPrice(artworkDetail.price)} VND`
-                      : ""}
-                  </span>
+                  {!isPurchased ? (
+                    <>
+                      {artworkDetail.discount &&
+                      artworkDetail.price &&
+                      artworkDetail.discount > 0
+                        ? formatPrice(
+                            artworkDetail.price -
+                              (artworkDetail.price * artworkDetail.discount) /
+                                100
+                          )
+                        : formatPrice(artworkDetail.price)}{" "}
+                      VND
+                      <span className="ml-2 text-grey line-through">
+                        {artworkDetail.discount &&
+                        artworkDetail.price &&
+                        artworkDetail.discount > 0
+                          ? `${formatPrice(artworkDetail.price)} VND`
+                          : ""}
+                      </span>
+                    </>
+                  ) : (
+                    <>You have paid for this artwork</>
+                  )}
                 </div>
               </div>
               <div className="relative inline-block w-[26.5rem] max-w-full font-medium capitalize leading-[1.313rem]">
                 {post.description}
               </div>
-              {getUserInfoId() != artworkDetail.creator.id &&
-              JSON.parse(getUserInfo() ?? "").role.filter(
-                (r: any) => r == Role.CUSTOMER
-              ) ? (
+              {!getUserInfo() ||
+              (getUserInfoId() != artworkDetail.creator.id &&
+                JSON.parse(getUserInfo() ?? "").role.filter(
+                  (r: any) => r == Role.CUSTOMER
+                )) ? (
                 <>
-                  <button
-                    onClick={() => {}}
-                    className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]"
-                  >
-                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-neutral-white">
-                      Purchase Now
-                    </div>
-                  </button>
-                  {uniqueArtworkIds &&
-                  uniqueArtworkIds?.includes(artworkDetail.artworkId) ? (
+                  {!isPurchased && finishRendering ? (
                     <>
                       <button
                         onClick={() => {
-                          handleRemoveArtworkFromWishlist(
-                            getUserInfoId(),
-                            artworkDetail.artworkId
+                          handleCreateOrderPurcahseNow(
+                            artworkDetail.price -
+                              (artworkDetail.price * artworkDetail.discount) /
+                                100,
+                            artworkDetail
                           );
                         }}
-                        className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-danger bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                        className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-primary-colour px-[1.25rem] py-[1rem] [border:none]"
                       >
-                        <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-danger">
-                          Remove From Favorites
+                        <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-neutral-white">
+                          Purchase Now
                         </div>
                       </button>
                     </>
@@ -508,41 +643,106 @@ const ArtworkDetail = (props: {}) => {
                     <></>
                   )}
 
-                  {!uniqueArtworkIds ||
-                  (uniqueArtworkIds &&
-                    !uniqueArtworkIds?.includes(artworkDetail.artworkId)) ? (
+                  {!getUserInfo() ||
+                  (getUserInfo() &&
+                    JSON.parse(getUserInfo() ?? "") &&
+                    JSON.parse(getUserInfo() ?? "").role.filter(
+                      (r: any) => r == Role.CUSTOMER
+                    )[0]) ? (
                     <>
-                      <button
-                        onClick={() => {
-                          handleAddArtworkFromWishlist(
-                            getUserInfoId(),
+                      {isPurchased && finishRendering ? (
+                        <>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const imageUrl =
+                                  artworkDetail.imageUrl.split(
+                                    "://example.com"
+                                  )[0];
+                                window.open(imageUrl);
+                              } catch (error) {
+                                console.error(
+                                  "Error downloading image:",
+                                  error
+                                );
+                              }
+                            }}
+                            className="hover:bg-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch whitespace-nowrap rounded-md bg-white px-[1.25rem] py-[1rem] [border:none]"
+                          >
+                            <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
+                              Download Now
+                            </div>
+                          </button>
+                          {getUserInfo() &&
+                          uniqueArtworkIds &&
+                          uniqueArtworkIds?.includes(
                             artworkDetail.artworkId
-                          );
-                        }}
-                        className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
-                      >
-                        <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
-                          Add To Favorites
-                        </div>
-                      </button>
+                          ) ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  handleRemoveArtworkFromWishlist(
+                                    getUserInfoId(),
+                                    artworkDetail.artworkId
+                                  );
+                                }}
+                                className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-danger bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                              >
+                                <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-danger">
+                                  Remove From Favorites
+                                </div>
+                              </button>
+                            </>
+                          ) : (
+                            <></>
+                          )}
+
+                          {!getUserInfo() ||
+                          !uniqueArtworkIds ||
+                          (uniqueArtworkIds &&
+                            !uniqueArtworkIds?.includes(
+                              artworkDetail.artworkId
+                            )) ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  handleAddArtworkFromWishlist(
+                                    getUserInfoId(),
+                                    artworkDetail.artworkId
+                                  );
+                                }}
+                                className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-primary-colour bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                              >
+                                <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-primary-colour">
+                                  Add To Favorites
+                                </div>
+                              </button>
+                            </>
+                          ) : (
+                            <></>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              enableChattingOfCustomer(
+                                artworkDetail.creator.id,
+                                artworkId
+                              );
+                            }}
+                            className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-white bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
+                          >
+                            <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-white">
+                              Chat With Creator
+                            </div>
+                          </button>
+                        </>
+                      ) : (
+                        <></>
+                      )}
                     </>
                   ) : (
                     <></>
                   )}
-
-                  <button
-                    onClick={() => {
-                      enableChattingOfCustomer(
-                        artworkDetail.creator.id,
-                        artworkId
-                      );
-                    }}
-                    className="hover:bg-blueviolet-200 hover:border-blueviolet-100 flex cursor-pointer flex-row items-start justify-center self-stretch rounded-md border-[1px] border-solid border-white bg-[transparent] px-[1.25rem] py-[1rem] hover:box-border hover:border-[1px] hover:border-solid"
-                  >
-                    <div className="font-barlow relative inline-block text-center text-[1.125rem] font-medium leading-[1.5rem] text-white">
-                      Chat With Creator
-                    </div>
-                  </button>
                 </>
               ) : (
                 <></>

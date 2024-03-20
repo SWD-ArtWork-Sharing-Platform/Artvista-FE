@@ -11,9 +11,6 @@ export type PackagePageType = {};
 
 const PackagePage: NextPage<PackagePageType> = ({}) => {
   const [packageList, setPackageList] = useState<PackageMarketDTO[]>([]);
-  const [displayPackageList, setDisplayPackageList] = useState<
-    PackageMarketDTO[]
-  >([]);
   const { isLoading, enableLoading, disableLoading } = useAppContext();
   const [sortedPrice, setSortedPrice] = useState<string>("all");
   const sortedPriceOptions = [
@@ -33,7 +30,6 @@ const PackagePage: NextPage<PackagePageType> = ({}) => {
       .getAllAvailablePackage()
       .then((response) => {
         if (response.data.isSuccess && response.data.result) {
-          setDisplayPackageList(response.data.result);
           setPackageList(response.data.result);
         }
       })
@@ -116,7 +112,7 @@ const PackagePage: NextPage<PackagePageType> = ({}) => {
                 style={{ borderRadius: "10px" }}
                 className="px-[3rem] justify-around w-full slate-950 pricing-gd-left pric-7-1 text-neutral-white flex flex-row flex-wrap"
               >
-                {displayPackageList
+                {packageList
                   .sort((a, b) => {
                     if (sortedPrice == sortedPriceOptions[0].value) {
                       return -1;

@@ -8,6 +8,12 @@
   transition: all ease 0.3s;
   color: #ffffff;
 }
+.header_links_hover_signup:hover {
+  transform: scale(1.1);
+  transition: all ease 0.3s;
+  color: #ffffff;
+  font-weight: bolder;
+}
 
 .header_links_hover_explore {
   font-size: 2rem !important;

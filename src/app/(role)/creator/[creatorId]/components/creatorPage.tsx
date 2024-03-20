@@ -8,6 +8,8 @@ import { getUserInfo, getUserInfoId } from "@/utils/utils";
 import Discover from "@/app/(common)/discover/components/Discover";
 import { useEffect, useState } from "react";
 import { getUserAvatar } from "@/utils/useFirebaseStorage";
+import { AuthUser } from "@/types/authentication";
+import authApi from "@/api/auth/auth";
 
 const CreatorPage: NextPage = () => {
   const params = useParams();
@@ -15,6 +17,7 @@ const CreatorPage: NextPage = () => {
   const router = useRouter();
   const { enableChattingOfCustomer, disableLoading } = useAppContext();
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [creatorInfo, setCreatorInfo] = useState<AuthUser>(null);
 
   useEffect(() => {
     disableLoading();
@@ -22,6 +25,16 @@ const CreatorPage: NextPage = () => {
       try {
         const avatarUrl = await getUserAvatar(creatorId ?? "");
         setUserAvatar(avatarUrl);
+        authApi
+          .getUserInfo(creatorId)
+          .then((response) => {
+            if (response.data.isSuccess) {
+              setCreatorInfo(response.data.result);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
       } catch (error) {
         console.error("Error setting avatar:", error);
       }
@@ -45,12 +58,13 @@ const CreatorPage: NextPage = () => {
                 />
                 <div className="flex flex-col items-center justify-start py-[0rem] px-[1.25rem] gap-[0.813rem_0rem]">
                   <div className="text-neutral-white mt-3 relative leading-[1.5rem] font-semibold mq450:text-[1.188rem] mq450:leading-[1.188rem]">
-                    John Doe
+                    {creatorInfo?.name}
                   </div>
                   <button
                     style={{ borderRadius: "3px" }}
                     onClick={() => {
                       if (
+                        getUserInfo() &&
                         getUserInfoId() != creatorId &&
                         JSON.parse(getUserInfo() ?? "").role[0] == Role.CUSTOMER
                       ) {

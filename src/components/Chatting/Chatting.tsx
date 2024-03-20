@@ -69,6 +69,7 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
         roleID: userLogin ? userLogin.role[0] : "",
         artwork: artwork ? JSON.stringify(artwork) : "",
         createdAt: moment(new Date().toISOString()).format("DD-MM-YYYY, HH:mm"),
+        seen: false,
       });
       setArtwork(null);
     }
@@ -84,6 +85,7 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
         roleID: userLogin ? userLogin.role[0] : "",
         artwork: "",
         createdAt: moment(new Date().toISOString()).format("DD-MM-YYYY, HH:mm"),
+        seen: false,
       });
     }
     setMessageTyping("");

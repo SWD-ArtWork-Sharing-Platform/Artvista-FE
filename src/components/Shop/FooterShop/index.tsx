@@ -44,7 +44,10 @@ const FooterShop = (props: {}) => {
               />
             </div>
           </div>
-          <div className="text-neutral-white mq750:flex-wrap mq750:min-w-full z-[1] flex min-w-[530px] max-w-full flex-1 flex-row items-start justify-between gap-[20px] text-xl">
+          <div
+            style={{ transform: "translateX(-20rem)" }}
+            className="text-neutral-white mq750:flex-wrap mq750:min-w-full z-[1] flex min-w-[530px] max-w-full flex-1 flex-row items-start justify-end gap-[20px] text-xl"
+          >
             <div className="flex flex-col items-start justify-start gap-[22px_0px]">
               <div className="mq450:text-base mq450:leading-[22px] relative font-semibold leading-[27px]">
                 Links
@@ -57,6 +60,14 @@ const FooterShop = (props: {}) => {
                   }}
                 >
                   Discover
+                </div>
+                <div
+                  className="relative leading-[24px] footer_links"
+                  onClick={() => {
+                    router.push(PATH_SHOP.general.package);
+                  }}
+                >
+                  Package
                 </div>
                 <div
                   className="relative leading-[24px] footer_links"
@@ -74,29 +85,6 @@ const FooterShop = (props: {}) => {
                 >
                   Sign In
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-col items-start justify-start gap-[22px_0px]">
-              <div className="mq450:text-base mq450:leading-[22px] relative font-semibold leading-[27px]">
-                My Account
-              </div>
-              <div className="text-input-field-text flex flex-col items-start justify-start gap-[15px_0px] text-lg">
-                <div className="relative leading-[24px]">Profile</div>
-                <div className="relative leading-[24px]">Favourites</div>
-                <div className="relative leading-[24px]">Watchlist</div>
-                <div className="relative leading-[24px]">My Collections</div>
-                <div className="relative leading-[24px]">Settings</div>
-              </div>
-            </div>
-            <div className="flex flex-col items-start justify-start gap-[22px_0px] text-lg">
-              <div className="relative font-semibold leading-[27px]">
-                Resources
-              </div>
-              <div className="text-input-field-text flex flex-col items-start justify-start gap-[15px_0px]">
-                <div className="relative leading-[24px]">Platform Status</div>
-                <div className="relative leading-[24px]">Partners</div>
-                <div className="relative leading-[24px]">Taxes</div>
-                <div className="relative leading-[24px]">Newsletter</div>
               </div>
             </div>
           </div>

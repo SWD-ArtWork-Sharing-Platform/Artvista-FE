@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import {
   PATH_ADMIN,
   PATH_AUTH,
+  PATH_COMMON_USER,
   PATH_CREATOR,
   PATH_CUSTOMER,
   PATH_SHOP,
@@ -34,7 +35,7 @@ const getLocalStorage = (name: string) => {
 const HeaderShopComponent = (props: {}) => {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
-  const { isLoading } = useAppContext();
+  const { isLoading, chatting } = useAppContext();
   const accessToken = getLocalStorage("accessToken");
   const user = getUserInfo();
   const userLogin = user ? JSON.parse(user) : null;
@@ -146,40 +147,47 @@ const HeaderShopComponent = (props: {}) => {
             <></>
           )}
 
-          <div className="mr-5 self-stretch flex flex-row items-start justify-between gap-[1.25rem]">
-            {accessToken &&
-            userLogin &&
-            userLogin.role &&
-            (userLogin.role.filter((role: any) => role == Role.CREATOR)[0] ||
-              userLogin.role.filter(
-                (role: any) => role == Role.CUSTOMER
-              )[0]) ? (
-              <>
-                <img
-                  className="cursor-pointer h-[2.25rem] w-[2.25rem] relative overflow-hidden shrink-0 min-h-[2.25rem]"
-                  loading="lazy"
-                  alt=""
-                  src="/images/shop/Header/message_icon.png"
-                />
-              </>
-            ) : (
-              <></>
-            )}
+          {accessToken && userLogin ? (
+            <>
+              <div className="mr-5 self-stretch flex flex-row items-start justify-between gap-[1.25rem]">
+                {userLogin.role &&
+                userLogin.role.filter(
+                  (role: any) => role == Role.CUSTOMER || role == Role.CREATOR
+                )[0] ? (
+                  <>
+                    <img
+                      className="cursor-pointer h-[2.25rem] w-[2.25rem] relative overflow-hidden shrink-0 min-h-[2.25rem]"
+                      loading="lazy"
+                      alt=""
+                      src="/images/shop/Header/order_icon.svg"
+                      onClick={() => {
+                        router.push(PATH_COMMON_USER.order);
+                      }}
+                    />
+                  </>
+                ) : (
+                  <></>
+                )}
 
-            <img
-              className="cursor-pointer h-[2.25rem] w-[2.25rem] relative overflow-hidden shrink-0 min-h-[2.25rem]"
-              loading="lazy"
-              alt=""
-              src="/images/shop/Header/cart_icon.svg"
-            />
-            <img
-              className="cursor-pointer h-[2.25rem] w-[2.25rem] relative overflow-hidden shrink-0 min-h-[2.25rem]"
-              loading="lazy"
-              alt=""
-              src="/images/shop/Header/noti_icon.svg"
-            />
-            {accessToken && userLogin ? (
-              <>
+                {userLogin.role &&
+                (userLogin.role.filter(
+                  (role: any) => role == Role.CREATOR
+                )[0] ||
+                  userLogin.role.filter(
+                    (role: any) => role == Role.CUSTOMER
+                  )[0]) ? (
+                  <>
+                    <img
+                      className="cursor-pointer h-[2.25rem] w-[2.25rem] relative overflow-hidden shrink-0 min-h-[2.25rem]"
+                      loading="lazy"
+                      alt=""
+                      src="/images/shop/Header/message_icon.svg"
+                    />
+                  </>
+                ) : (
+                  <></>
+                )}
+
                 <img
                   className="cursor-pointer *:h-[2.25rem] w-[2.25rem] relative rounded-[50%] object-cover min-h-[2.25rem]"
                   loading="lazy"
@@ -189,16 +197,26 @@ const HeaderShopComponent = (props: {}) => {
                     router.push(PATH_SHOP.profile(userLogin.id));
                   }}
                 />
-              </>
-            ) : (
-              <></>
-            )}
-          </div>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
 
           {!isAuthenticated && !accessToken ? (
             <>
               <div
-                className="flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
+                className="header_links_hover  flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-white px-6 py-4 text-center text-base text-primary-colour"
+                onClick={() => {
+                  router.push(PATH_AUTH.signin);
+                }}
+              >
+                <div className="text-primary-colour relative font-semibold leading-[1px]">
+                  Sign In
+                </div>
+              </div>
+              <div
+                className="ms-4 header_links_hover_signup flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
                 onClick={() => {
                   router.push(PATH_AUTH.signup);
                 }}
@@ -207,21 +225,11 @@ const HeaderShopComponent = (props: {}) => {
                   Sign Up
                 </div>
               </div>
-              <div
-                className="ms-4 flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
-                onClick={() => {
-                  router.push(PATH_AUTH.signin);
-                }}
-              >
-                <div className="relative font-semibold leading-[1px]">
-                  Sign In
-                </div>
-              </div>
             </>
           ) : (
             <>
               <div
-                className="header_btn_hover flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
+                className="header_links_hover_signup header_btn_hover flex cursor-pointer flex-row items-center justify-center whitespace-nowrap rounded-full bg-primary-colour px-6 py-4 text-center text-base text-neutral-white"
                 onClick={() => {
                   logout();
                   sweetAlert.alertSuccess("Log Out Successfully", "", 1000, 22);

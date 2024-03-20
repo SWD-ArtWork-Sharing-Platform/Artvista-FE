@@ -54,14 +54,7 @@ const ProfileComponent: NextPage = () => {
       if (previewImg && previewImg != currentAvatar) {
         changeAvatarImage(userLogin?.id ?? "", imageUpload);
       }
-      console.log({
-        id: userLogin ? userLogin.id : "",
-        name: values.name,
-        email: values.email,
-        phoneNumber: values.phoneNumber,
-        address: values.address,
-      });
-      const a = authApi
+      authApi
         .updateAccount(
           userLogin ? userLogin.id : "",
           values.name,
@@ -84,6 +77,7 @@ const ProfileComponent: NextPage = () => {
         })
         .catch((err) => console.log(err))
         .finally(() => {
+          setUserLogin({ ...userLogin, address: values.address });
           router.push(PATH_SHOP.profile(userLogin?.id));
           sweetAlert.alertSuccess("Update Profile Successfully", "", 1800, 22);
           disableLoading();
@@ -106,16 +100,26 @@ const ProfileComponent: NextPage = () => {
     const USER_INFO = getUserInfo();
     const USER_LOGIN = JSON.parse(USER_INFO ?? "");
     setUserLogin(USER_LOGIN != "" ? USER_LOGIN : null);
+    var phone = "";
+    console.log("aha");
+
+    if (USER_LOGIN.phoneNumber && USER_LOGIN.phoneNumber.startsWith("+")) {
+      console.log("aha");
+
+      phone =
+        "0" +
+        USER_LOGIN.phoneNumber.substring(3, USER_LOGIN.phoneNumber.length);
+    }
 
     if (USER_LOGIN != "") {
       formik.setValues({
         name: USER_LOGIN.name ?? "",
-        phoneNumber: USER_LOGIN.phoneNumber ?? "",
+        phoneNumber: phone,
         email: USER_LOGIN.email ?? "",
         address: USER_LOGIN.address ?? "",
       });
       setUserName(USER_LOGIN.name);
-      setUserPhone(USER_LOGIN.phoneNumber);
+      setUserPhone(phone);
     }
 
     setUserAvatar(USER_LOGIN);
@@ -396,7 +400,7 @@ const ProfileComponent: NextPage = () => {
                           },
                         ]}
                         hasFeedback
-                        initialValue={userLogin?.phoneNumber ?? ""}
+                        initialValue={userPhone ?? ""}
                       >
                         <Input
                           style={{ width: "100%" }}
@@ -467,8 +471,6 @@ const ProfileComponent: NextPage = () => {
                             email: userLogin.email ?? "",
                             address: userLogin.address ?? "",
                           });
-                          setPreviewImg(currentAvatar);
-                          setImageUpload(null);
                         }}
                         className="mt-4 hover:bg-blueviolet box-border flex w-full max-w-full flex-1 cursor-pointer flex-row items-start justify-center overflow-hidden whitespace-nowrap rounded-md bg-black px-5 py-[10px] [border:none]"
                       >
