@@ -99,7 +99,7 @@ const PackageSection = (props: {}) => {
                                 </li>
                                 <li className="mb-3">
                                   <p className="lists">
-                                    Time: {pkg.packageTime}
+                                    Time: {pkg.packageTime} {" days"}
                                   </p>
                                 </li>
                               </ul>
@@ -154,7 +154,9 @@ const PackageSection = (props: {}) => {
                                 </p>
                               </li>
                               <li className="mb-3">
-                                <p className="lists">Time: {pkg.packageTime}</p>
+                                <p className="lists">
+                                  Time: {pkg.packageTime} {" days"}
+                                </p>
                               </li>
                             </ul>
                           </div>
