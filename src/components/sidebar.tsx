@@ -10,12 +10,12 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeItem }) => {
     const routes = [
         { path: "/admin/dashboard", title: "Dashboard", icon: faHome },
-        { path: "/admin/artwork", title: "Artwork", icon: faPaintBrush },
-        { path: "/admin/category", title: "Category", icon: faThList },
         { path: "/admin/configuration", title: "Configuration", icon: faCog },
         { path: "/admin/post", title: "Post", icon: faEnvelope },
         { path: "/admin/interaction", title: "Interaction", icon: faComment },
+        { path: "/admin/category", title: "Category", icon: faThList },
         { path: "/admin/package", title: "Package", icon: faBox },
+        { path: "/admin/artwork", title: "Artwork", icon: faPaintBrush },
     ];
 
     const renderNavItem = (item: any) => {
