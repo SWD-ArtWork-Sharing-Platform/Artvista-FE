@@ -66,7 +66,6 @@ const ResetPassword: NextPage = () => {
             }
           }
           disableLoading();
-          console.log(response);
         })
         .catch((err) => {
           console.log(err);

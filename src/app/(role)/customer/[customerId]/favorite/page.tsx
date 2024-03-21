@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "This is Favorite Art Page for Artvista",
 };
 
-export default function DiscoverPage() {
+export default function WishlistPage() {
   return (
     <>
       <WishlistPageProvider />

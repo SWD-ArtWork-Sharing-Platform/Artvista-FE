@@ -57,28 +57,6 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
     onSubmit: async (values) => {
       values.status = ArtworkStatus.Available;
       values.image = imageUpload;
-
-      // artworkManagementApi
-      //   .createNewArtwork(
-      //     values.artworkId,
-      //     values.artworkName,
-      //     values.price,
-      //     values.discount,
-      //     ArtworkStatus.Available,
-      //     values.id,
-      //     values.categoryId,
-      //     values.imageUrl,
-      //     values.imageLocalPath,
-      //     imageUpload ?? null,
-      //     values.postDTOs,
-      //     values.reportDTOs
-      //   )
-      //   .then((res) => {
-      //     console.log(res);
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //   });
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
         if (key === "image" && value) {

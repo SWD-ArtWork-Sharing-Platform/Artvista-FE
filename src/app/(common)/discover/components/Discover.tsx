@@ -21,10 +21,10 @@ const Discover: NextPage<DiscoverType> = ({
   creatorId,
   uniqueArtworkIds,
 }) => {
-  const [artworkList, setArtworkList] = useState<ArtworkDTO[]>([]);
-  const [displayArtworkList, setDisplayArtworkList] = useState<ArtworkDTO[]>(
-    []
-  );
+  const [artworkList, setArtworkList] = useState<ArtworkDTO[] | null>(null);
+  const [displayArtworkList, setDisplayArtworkList] = useState<
+    ArtworkDTO[] | null
+  >(null);
   const { isLoading, enableLoading, disableLoading } = useAppContext();
   const [searchKey, setSearchKey] = useState<string>("");
   const [searchCreatorName, setSearchCreatorName] = useState<string>("");
@@ -62,10 +62,15 @@ const Discover: NextPage<DiscoverType> = ({
         if (response.data.isSuccess && response.data.result) {
           setArtworkList(response.data.result);
           setDisplayArtworkList(response.data.result);
+        } else {
+          setArtworkList([]);
+          setDisplayArtworkList([]);
         }
       })
       .catch((error) => {
         console.log(error);
+        setArtworkList([]);
+        setDisplayArtworkList([]);
       })
       .finally(() => {
         disableLoading();
@@ -101,7 +106,11 @@ const Discover: NextPage<DiscoverType> = ({
   }, []);
 
   useEffect(() => {
-    if (artworkList.length > 0 && searchCateIdOptions.length > 0) {
+    if (
+      artworkList &&
+      artworkList.length > 0 &&
+      searchCateIdOptions.length > 0
+    ) {
       const DISCOVER_CATEGORY_SORT = localStorage.getItem(
         "DISCOVER_CATEGORY_SORT"
       );
@@ -121,33 +130,55 @@ const Discover: NextPage<DiscoverType> = ({
   };
 
   const handleSearch = () => {
-    setDisplayArtworkList(
-      [...artworkList].filter(
-        (a) =>
-          (searchKey != "" &&
-            a.artworkName
-              .toLowerCase()
-              .includes(searchKey.trim().toLowerCase())) ||
-          (searchCreatorName != "" &&
-            a.creator.name
-              .toLowerCase()
-              .includes(searchCreatorName.trim().toLowerCase()))
-      )
-    );
-    if (searchKey.trim() != "" && searchCreatorName.trim() != "") {
-      setSearchMessage(
-        `All artworks found with name containing "${searchKey}" and creator related to "${searchCreatorName}"`
+    if (artworkList) {
+      setDisplayArtworkList(
+        [...artworkList].filter((a) => {
+          if (searchKey.trim() == "" && searchCreatorName.trim() == "") {
+            return true;
+          }
+          if (searchKey.trim() == "") {
+            return (
+              searchCreatorName != "" &&
+              a.creator.name
+                .toLowerCase()
+                .includes(searchCreatorName.trim().toLowerCase())
+            );
+          }
+          if (searchCreatorName.trim() == "") {
+            return (
+              searchKey != "" &&
+              a.artworkName
+                .toLowerCase()
+                .includes(searchKey.trim().toLowerCase())
+            );
+          }
+          return (
+            (searchKey != "" &&
+              a.artworkName
+                .toLowerCase()
+                .includes(searchKey.trim().toLowerCase())) ||
+            (searchCreatorName != "" &&
+              a.creator.name
+                .toLowerCase()
+                .includes(searchCreatorName.trim().toLowerCase()))
+          );
+        })
       );
-    } else if (searchKey.trim() != "" && searchCreatorName.trim() == "") {
-      setSearchMessage(
-        `All artworks found with name containing "${searchKey}"`
-      );
-    } else if (searchKey.trim() == "" && searchCreatorName.trim() != "") {
-      setSearchMessage(
-        `All artworks found with creator related to "${searchCreatorName}"`
-      );
-    } else {
-      setSearchMessage("");
+      if (searchKey.trim() != "" && searchCreatorName.trim() != "") {
+        setSearchMessage(
+          `All artworks found with name containing "${searchKey}" and creator related to "${searchCreatorName}"`
+        );
+      } else if (searchKey.trim() != "" && searchCreatorName.trim() == "") {
+        setSearchMessage(
+          `All artworks found with name containing "${searchKey}"`
+        );
+      } else if (searchKey.trim() == "" && searchCreatorName.trim() != "") {
+        setSearchMessage(
+          `All artworks found with creator related to "${searchCreatorName}"`
+        );
+      } else {
+        setSearchMessage("");
+      }
     }
   };
 
@@ -157,6 +188,10 @@ const Discover: NextPage<DiscoverType> = ({
       handleSearch();
     }
   }, [sortedPrice]);
+
+  if (!displayArtworkList) {
+    return <></>;
+  }
 
   return (
     <>
@@ -307,14 +342,25 @@ const Discover: NextPage<DiscoverType> = ({
 
           <div className="min-w-full mq800:gap-[0rem_2.25rem] mq450:gap-[0rem_1.125rem] flex max-w-full flex-row flex-wrap items-start justify-start gap-[0rem_4.563rem]  text-center text-[1.25rem]">
             <div className="mt-5 flex max-w-full flex-row flex-wrap items-start justify-start gap-[1rem_1rem]  pl-[3rem] text-neutral-white">
+              {displayArtworkList && displayArtworkList.length == 0 ? (
+                <h1 className="text-whitesmoke text-center">
+                  No artworks found yet.
+                </h1>
+              ) : (
+                <></>
+              )}
               {displayArtworkList
-                .filter(
-                  (a) =>
-                    a.status.trim().toLowerCase() ==
-                      ArtworkStatus.Available.trim().toLowerCase() ||
-                    a.status.trim().toLowerCase() ==
-                      ArtworkStatus.Sold.trim().toLowerCase()
-                )
+                .filter((a) => {
+                  if (a.status) {
+                    return (
+                      a.status.trim().toLowerCase() ==
+                        ArtworkStatus.Available.trim().toLowerCase() ||
+                      a.status.trim().toLowerCase() ==
+                        ArtworkStatus.Sold.trim().toLowerCase()
+                    );
+                  }
+                  return true;
+                })
                 .filter((a) => {
                   if (creatorId) {
                     return a.creator.id == creatorId;
@@ -364,7 +410,11 @@ const Discover: NextPage<DiscoverType> = ({
                     <ArtworkCard
                       key={index}
                       artworkId={artwork.artworkId}
-                      maskGroup={artwork.imageUrl.split("://example")[0]}
+                      maskGroup={
+                        artwork.imageUrl
+                          ? artwork.imageUrl.split("://example")[0]
+                          : ""
+                      }
                       artworkName={artwork.artworkName}
                       creatorkName={artwork.creator.name}
                       creatorId={artwork.creator.id}

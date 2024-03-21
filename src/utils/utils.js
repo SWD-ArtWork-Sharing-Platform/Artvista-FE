@@ -33,6 +33,7 @@ export const setUserInfo = (userInfo) => {
       email: userInfo.email,
       phoneNumber: userInfo.phoneNumber,
       role: userInfo.role,
+      address: userInfo.address,
     })
   );
 };

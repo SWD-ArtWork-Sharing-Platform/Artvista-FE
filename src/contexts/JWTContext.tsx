@@ -153,7 +153,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string) => {
     try {
       enableLoading();
-      const response = await axiosInstances.auth
+      await axiosInstances.auth
         .post("/auth/login", {
           username,
           password,
@@ -164,7 +164,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
             response.data.result != null &&
             response.data.result.user != null
           ) {
-            const { id, name, email, phoneNumber, role } =
+            const { id, name, email, phoneNumber, role, address } =
               response.data.result.user;
 
             const user = {
@@ -173,6 +173,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
               email: email,
               phoneNumber: phoneNumber,
               role: role,
+              address: address,
             };
 
             const accessToken = response.data.result.token;
@@ -232,7 +233,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithEmail = async (email: string) => {
     try {
       enableLoading();
-      const response = await axiosInstances.auth
+      await axiosInstances.auth
         .post("/auth/LoginGoogle", email)
         .then((response) => {
           if (
@@ -240,6 +241,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
             response.data.result != null &&
             response.data.result.user != null
           ) {
+            console.log(response);
+
             const { id, name, email, phoneNumber, role } =
               response.data.result.user;
 
@@ -273,9 +276,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
               25
             );
           }
+          console.log(response);
         })
         .catch((error) => {
-          console.log(error);
+          console.log("haha", error);
           disableLoading();
           sweetAlert.alertFailed(
             `Login failed.`,
@@ -283,7 +287,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
             1500,
             25
           );
-          router.push(PATH_AUTH.signin);
+          // router.push(PATH_AUTH.signin);
         })
         .finally(() => {
           if (getUserInfo()) {
@@ -321,7 +325,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       name,
-      parsedPhone,
+      phoneNumber: parsedPhone,
       role,
       address,
     });
@@ -330,16 +334,12 @@ function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       name,
-      parsedPhone,
+      phoneNumber: parsedPhone,
       role,
       address,
     });
 
-    if (
-      response.data.isSuccess &&
-      response.data.result.succeeded &&
-      response.data.result.succeeded
-    ) {
+    if (response.data.isSuccess && response.data.result.succeeded) {
       localStorage.setItem(
         "REGISTER_CONFIRMING_USER",
         JSON.stringify({
@@ -347,6 +347,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
           password,
         })
       );
+      assignRole(email, password, name, parsedPhone, role, address);
       disableLoading();
       router.push(PATH_AUTH.signupInfo);
     }

@@ -41,3 +41,7 @@ export const PATH_CUSTOMER = {
   root: ROOT_CUSTOMER,
   wishlist: (customerId: string) => `${ROOT_CUSTOMER}/${customerId}/favorite`,
 };
+
+export const PATH_COMMON_USER = {
+  order: "/user/order"
+}

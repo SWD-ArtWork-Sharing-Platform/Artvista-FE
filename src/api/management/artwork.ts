@@ -35,7 +35,7 @@ reportDTOs: any = null) => requestManagement.post(`${ROOT_ARTWORK}/CreateNewArtw
 })
 
 const createArtwork = async (formData: FormData) => await axios
-.post(`${ROOT_ARTWORK}`, formData, {
+.post(`https://artvistamanagementapi.azurewebsites.net/api/artwork`, formData, {
   headers: {
     "Content-Type": "multipart/form-data",
     "Authorization": `Bearer ${localStorage.getItem('accessToken')}`

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import "./index.scss";
 import { getUserAvatar } from "@/utils/useFirebaseStorage";
 import { formatPrice } from "@/utils/formatPrice";
+import { formatDate_DD_MM_YYYY } from "@/utils/formatDate";
 
 export type Cards1Type = {
   artworkId: string;
@@ -67,13 +68,13 @@ const ArtworkCard: NextPage<Cards1Type> = ({
       event.preventDefault();
     };
 
-    // document.addEventListener("keydown", preventF12Key);
-    // document.addEventListener("contextmenu", preventContextMenu);
+    document.addEventListener("keydown", preventF12Key);
+    document.addEventListener("contextmenu", preventContextMenu);
 
-    // return () => {
-    //   document.removeEventListener("keydown", preventF12Key);
-    //   document.removeEventListener("contextmenu", preventContextMenu);
-    // };
+    return () => {
+      document.removeEventListener("keydown", preventF12Key);
+      document.removeEventListener("contextmenu", preventContextMenu);
+    };
   }, []);
 
   return (
@@ -155,21 +156,21 @@ const ArtworkCard: NextPage<Cards1Type> = ({
                     src={userAvatar}
                   />
                   <div className="flex flex-1 flex-col items-start justify-center gap-[0.3rem_0rem] self-stretch">
-                    <div className="relative text-[1rem] font-medium">
-                      Creator
+                    <div className="relative text-[0.9rem] font-medium">
+                      Cretor
                     </div>
-                    <div className="text-bg relative text-[1.2rem] font-medium capitalize">
+                    <div className="text-bg relative text-[1rem] font-medium capitalize">
                       {creatorkName}
                     </div>
                   </div>
                 </div>
                 <div className="flex h-[3.75rem] flex-col items-end justify-center gap-[0.33rem_0rem] text-right">
-                  <div className="relative text-[1rem] font-medium line-through">
+                  <div className="relative text-[0.9rem] font-medium line-through">
                     {discount && price && discount > 0
                       ? `${formatPrice(price)} VND`
                       : ""}
                   </div>
-                  <b className="text-bg mq450:text-[1.188rem] relative text-left text-[1.2rem]">
+                  <b className="text-bg relative text-left text-[1rem]">
                     {discount && price && discount > 0
                       ? formatPrice(price - (price * discount) / 100)
                       : formatPrice(price ?? 0)}{" "}

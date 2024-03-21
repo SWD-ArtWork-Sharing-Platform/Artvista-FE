@@ -19,6 +19,7 @@ import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import ArtworkCard from "@/app/(common)/discover/components/ArtworkCard";
 import artworkManagementApi from "@/api/management/artwork";
 import { v4 } from "uuid";
+import authApi from "@/api/auth/auth";
 
 type ChattingType = {
   isOpen?: boolean;
@@ -32,6 +33,7 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
   artworkIdInput,
 }) => {
   const [userLogin, setUserLogin] = useState<AuthUser | null>(null);
+  const [userChat, setUserChat] = useState<AuthUser | null>(null);
   const [messageList, setMessageList] = useState<FirebaseMessage[]>([]);
   const [messageTyping, setMessageTyping] = useState<string>("");
   const [chatId, setChatId] = useState<string>("");
@@ -47,6 +49,18 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
       });
       observer.observe(messagesChatRef.current, { childList: true });
     }
+    if (chattingOfCustomerId) {
+      authApi
+        .getUserInfo(chattingOfCustomerId)
+        .then((response) => {
+          if (response.data.isSuccess) {
+            setUserChat(response.data.result);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }, []);
 
   const scrollToBottom = () => {
@@ -60,16 +74,22 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
 
   const sendMessage = () => {
     if (artworkIdInput != "" && artwork != null) {
-      push(ref(database, `message/creator_customer/${chatId}`), {
-        messageId:
-          moment(new Date()).format("DD_MM_YYYY_HH_mm_ss") + "_" + v4(),
-        name: userLogin ? userLogin.name : "",
-        message: messageTyping,
-        userID: userLogin ? userLogin.id : "",
-        roleID: userLogin ? userLogin.role[0] : "",
-        artwork: artwork ? JSON.stringify(artwork) : "",
-        createdAt: moment(new Date().toISOString()).format("DD-MM-YYYY, HH:mm"),
-      });
+      // push(ref(database, `message/creator_customer/${chatId}`), {
+      //   messageId:
+      //     moment(new Date()).format("DD_MM_YYYY_HH_mm_ss") + "_" + v4(),
+      //   name: userLogin ? userLogin.name : "",
+      //   message: messageTyping,
+      //   userID: userLogin ? userLogin.id : "",
+      //   roleID: userLogin ? userLogin.role[0] : "",
+      //   artwork: artwork ? JSON.stringify(artwork) : "",
+      //   createdAt: moment(new Date().toISOString()).format("DD-MM-YYYY, HH:mm"),
+      //   seen: false,
+      // });
+      // push(ref(database, `messageNoti/${chattingOfCustomerId}`), {
+      //   userIDFrom: userLogin ? userLogin.id : "",
+      //   name: userLogin ? userLogin.name : "",
+      //   seen: false,
+      // });
       setArtwork(null);
     }
     if (messageTyping.trim() != "") {
@@ -84,6 +104,12 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
         roleID: userLogin ? userLogin.role[0] : "",
         artwork: "",
         createdAt: moment(new Date().toISOString()).format("DD-MM-YYYY, HH:mm"),
+        seen: false,
+      });
+      push(ref(database, `messageNoti/${chattingOfCustomerId}`), {
+        userIDFrom: userLogin ? userLogin.id : "",
+        name: userLogin ? userLogin.name : "",
+        seen: false,
       });
     }
     setMessageTyping("");
@@ -101,7 +127,7 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
       setUserLogin(userParse);
 
       const chatId =
-        userLogin && userLogin?.role[0] == Role.CREATOR
+        userLogin && userLogin?.role.filter((r: any) => r == Role.CREATOR)[0]
           ? `${userParse.id}@@and@@${chattingOfCustomerId}`
           : `${chattingOfCustomerId}@@and@@${userParse?.id}`;
       setChatId(chatId);
@@ -157,7 +183,10 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
                 marginBottom: "0px",
               }}
             >
-              Quan
+              {messageList.filter((x: any) => x.userID != userLogin?.id)[0]
+                ? messageList.filter((x: any) => x.userID != userLogin?.id)[0]
+                    .name
+                : ""}
             </span>
           </div>
           <div className="flex flex-row justify-end mt-1 ms-3">
@@ -183,26 +212,26 @@ const ChattingOfCustomer: NextPage<ChattingType> = ({
               artwork,
               artworkParse,
             } = item;
-            if (artwork !== undefined && artwork !== "") {
-              artworkParse = JSON.parse(artwork);
-              return (
-                <div
-                  className={`message ${
-                    userLogin && userID == userLogin.id ? "me" : ""
-                  }`}
-                  style={{ height: "45vh" }}
-                >
-                  <ArtworkCard
-                    artworkId={artworkParse?.artworkId ?? ""}
-                    artworkName={artworkParse?.artworkName ?? ""}
-                    price={artworkParse?.price}
-                    discount={artworkParse?.discount}
-                    maskGroup={artworkParse?.imageUrl.split("://example")[0]}
-                    translateYNumber={10}
-                  />{" "}
-                </div>
-              );
-            }
+            // if (artwork !== undefined && artwork !== "") {
+            //   artworkParse = JSON.parse(artwork);
+            //   return (
+            //     <div
+            //       className={`message ${
+            //         userLogin && userID == userLogin.id ? "me" : ""
+            //       }`}
+            //       style={{ height: "45vh" }}
+            //     >
+            //       <ArtworkCard
+            //         artworkId={artworkParse?.artworkId ?? ""}
+            //         artworkName={artworkParse?.artworkName ?? ""}
+            //         price={artworkParse?.price}
+            //         discount={artworkParse?.discount}
+            //         maskGroup={artworkParse?.imageUrl.split("://example")[0]}
+            //         translateYNumber={10}
+            //       />
+            //     </div>
+            //   );
+            // }
             return (
               <div
                 key={index}

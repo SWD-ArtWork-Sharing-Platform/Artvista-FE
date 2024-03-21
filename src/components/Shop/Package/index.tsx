@@ -1,11 +1,33 @@
 "use client";
 import { useRouter } from "next/navigation";
-import PackageCard from "./PackageCard";
 import "./index.scss";
 import { PATH_SHOP } from "@/routes/paths";
+import packagePurchaseMarketApi from "@/api/market/packagePurchase";
+import { useEffect, useState } from "react";
+import { PackageMarketDTO } from "@/types/market/PackageMarketDTO";
+import { formatPrice } from "@/utils/formatPrice";
 
 const PackageSection = (props: {}) => {
   const router = useRouter();
+  const [packageList, setPackageList] = useState<PackageMarketDTO[]>([]);
+
+  const renderPackge = () => {
+    packagePurchaseMarketApi
+      .getAllAvailablePackage()
+      .then((response) => {
+        if (response.data.isSuccess && response.data.result) {
+          setPackageList(response.data.result);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    renderPackge();
+  }, []);
+
   return (
     <section className="package_area mb-20">
       <div className="w3l-pricing-7-main py-5" id="pricing">
@@ -31,138 +53,126 @@ const PackageSection = (props: {}) => {
             </div>
 
             <div className="pricing-sec-7">
-              <div
-                style={{ borderRadius: "10px" }}
-                className="bg-zinc-950 slate-950 pricing-gd-left pric-7-1 text-neutral-white"
-              >
-                <div className="w3l-pricing-7">
-                  <div className="w3l-pricing-7-top text-primary-colour">
-                    <h6 className="one-light ">Free Package</h6>
-                    <h4>
-                      <label>$</label>0<span>/month</span>
-                    </h4>
-                  </div>
-                  <div className="w3l-pricing-7-bottom">
-                    <div className="w3l-pricing-7-bottom-bottom">
-                      <ul className="links">
-                        <li>
-                          <p className="lists">5 Dog Walk </p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">3 Vet Visit </p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">3 Pet Spa</p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">Free Supports</p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">Customer Support</p>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="buy-button">
-                      <a
-                        className="py-3 px-3 popup btn btn-style btn-primary bg-purple-900"
-                        href="#buy"
-                        style={{ borderRadius: "5px" }}
+              {packageList.map((pkg, index) => {
+                if (index >= 3) {
+                  return <></>;
+                }
+                if (index == 1) {
+                  return (
+                    <>
+                      <div
+                        className="pricing-gd-left pric-7 active overflow-hidden"
+                        style={{ borderRadius: "8px" }}
                       >
-                        Buy Now
-                      </a>
+                        <div className="w3l-pricing-7">
+                          <div className="w3l-pricing-7-top bg-purple-900">
+                            <h5 style={{ borderRadius: "5px" }}>
+                              {pkg.discount > 0
+                                ? `Save ${pkg.discount}%`
+                                : "Good Package"}
+                            </h5>
+                            <h6>{pkg.packageName}</h6>
+                            <h4>
+                              {formatPrice(
+                                pkg.price - (pkg.price * pkg.discount) / 100
+                              )}
+                              <span>/VND</span>
+                            </h4>
+                          </div>
+                          <div className="w3l-pricing-7-bottom bg-black-2 text-neutral-200">
+                            <div className="w3l-pricing-7-bottom-bottom">
+                              <ul className="links">
+                                <li className="mb-3">
+                                  <p className="lists">
+                                    Maximum Artworks: {pkg.maximumArtworks}{" "}
+                                  </p>
+                                </li>
+                                <li className="mb-3">
+                                  <p className={`lists`}>
+                                    Default Price:{" "}
+                                    <span
+                                      className={`${pkg.discount > 0 ? "line-through" : ""}`}
+                                    >
+                                      {formatPrice(pkg.price)} {" VND"}
+                                    </span>
+                                  </p>
+                                </li>
+                                <li className="mb-3">
+                                  <p className="lists">
+                                    Time: {pkg.packageTime}
+                                  </p>
+                                </li>
+                              </ul>
+                            </div>
+                            <div className="buy-button">
+                              <a
+                                className="py-3 px-3 popup btn btn-style btn-primary bg-purple-900"
+                                href="#buy"
+                                style={{ borderRadius: "5px" }}
+                              >
+                                Get Started
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }
+                return (
+                  <>
+                    <div
+                      style={{ borderRadius: "10px" }}
+                      className="bg-zinc-950 slate-950 pricing-gd-left pric-7-1 text-neutral-white"
+                    >
+                      <div className="w3l-pricing-7">
+                        <div className="w3l-pricing-7-top text-primary-colour">
+                          <h6 className="one-light ">{pkg.packageName}</h6>
+                          <h4>
+                            {formatPrice(
+                              pkg.price - (pkg.price * pkg.discount) / 100
+                            )}
+                            <span>/VND</span>{" "}
+                          </h4>
+                        </div>
+                        <div className="w3l-pricing-7-bottom">
+                          <div className="w3l-pricing-7-bottom-bottom">
+                            <ul className="links">
+                              <li className="mb-3">
+                                <p className="lists">
+                                  Maximum Artworks: {pkg.maximumArtworks}{" "}
+                                </p>
+                              </li>
+                              <li className="mb-3">
+                                <p className={`lists`}>
+                                  Default Price:{" "}
+                                  <span
+                                    className={`${pkg.discount > 0 ? "line-through" : ""}`}
+                                  >
+                                    {formatPrice(pkg.price)} {" VND"}
+                                  </span>
+                                </p>
+                              </li>
+                              <li className="mb-3">
+                                <p className="lists">Time: {pkg.packageTime}</p>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="buy-button">
+                            <a
+                              className="py-3 px-3 popup btn btn-style btn-primary bg-purple-900"
+                              href="#buy"
+                              style={{ borderRadius: "5px" }}
+                            >
+                              Buy Now
+                            </a>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className="pricing-gd-left pric-7 active overflow-hidden"
-                style={{ borderRadius: "8px" }}
-              >
-                <div className="w3l-pricing-7">
-                  <div className="w3l-pricing-7-top bg-purple-900">
-                    <h5 style={{ borderRadius: "5px" }}>Save 10% </h5>
-                    <h6>Standard Package</h6>
-                    <h4>
-                      <label>$</label>39<span>/month</span>
-                    </h4>
-                  </div>
-                  <div className="w3l-pricing-7-bottom bg-black-2 text-neutral-200">
-                    <div className="w3l-pricing-7-bottom-bottom">
-                      <ul className="links">
-                        <li>
-                          <p className="lists">5 Dog Walk </p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">3 Vet Visit </p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">3 Pet Spa</p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">Free Supports</p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">Customer Support</p>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="buy-button">
-                      <a
-                        className="py-3 px-3 popup btn btn-style btn-primary bg-purple-900"
-                        href="#buy"
-                        style={{ borderRadius: "5px" }}
-                      >
-                        Get Started
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                style={{ borderRadius: "10px" }}
-                className="bg-zinc-950 slate-950 pricing-gd-left pric-7-1 text-neutral-white"
-              >
-                <div className="w3l-pricing-7">
-                  <div className="w3l-pricing-7-top text-primary-colour">
-                    <h6 className="one-light ">Free Package</h6>
-                    <h4>
-                      <label>$</label>0<span>/month</span>
-                    </h4>
-                  </div>
-                  <div className="w3l-pricing-7-bottom">
-                    <div className="w3l-pricing-7-bottom-bottom">
-                      <ul className="links">
-                        <li>
-                          <p className="lists">5 Dog Walk </p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">3 Vet Visit </p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">3 Pet Spa</p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">Free Supports</p>
-                        </li>
-                        <li>
-                          <p className="lists line-through">Customer Support</p>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="buy-button">
-                      <a
-                        className="py-3 px-3 popup btn btn-style btn-primary bg-purple-900"
-                        href="#buy"
-                        style={{ borderRadius: "5px" }}
-                      >
-                        Buy Now
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  </>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -16,6 +16,10 @@ import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import artworkMarketApi from "@/api/market/artwork";
 import Loading from "@/components/Loading/Loading";
 import axios from "axios";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { firebaseStorage } from "@/config/firebaseConfig";
+import { v4 } from "uuid";
+import Swal from "sweetalert2";
 
 export type CreatorCreateType = {
   editMode?: boolean;
@@ -79,23 +83,54 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
       //   .catch((err) => {
       //     console.log(err);
       //   });
-      const formData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
-        if (key === "image" && value) {
-          formData.append(key, value as File);
-        } else {
-          formData.append(key, (value ?? "").toString());
-        }
-      });
+      var imageUrlFirebase = "";
+      if (imageUpload) {
+        const imageRef = ref(firebaseStorage, `artworkImages/${v4()}}`);
+        uploadBytes(imageRef, imageUpload).then((snapshot) => {
+          getDownloadURL(snapshot.ref)
+            .then((url) => {
+              imageUrlFirebase = url;
+            })
+            .finally(async () => {
+              values.imageUrl = imageUrlFirebase;
 
-      await artworkManagementApi
-        .createArtwork(formData)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
+              const formData = new FormData();
+              Object.entries(values).forEach(([key, value]) => {
+                if (key === "image" && value) {
+                  formData.append(key, value as File);
+                } else {
+                  formData.append(key, (value ?? "").toString());
+                }
+              });
+
+              await artworkManagementApi
+                .createArtwork(formData)
+                .then((res) => {
+                  console.log(res);
+                  if (res.data.isSuccess) {
+                    Swal.fire({
+                      icon: "info",
+                      title: `Create Artwork Successfully`,
+                      html: `Let's return to see your showcase now`,
+                      timerProgressBar: true,
+                      showCancelButton: false,
+                      showConfirmButton: true,
+                      confirmButtonText: "Click here to continue",
+                      showLoaderOnConfirm: true,
+                      allowOutsideClick: false,
+                    })
+                      .then((result) => {
+                        router.push(PATH_SHOP.creator.visitPage(creatorId));
+                      })
+                      .catch((err) => {});
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            });
         });
+      }
     },
   });
 
