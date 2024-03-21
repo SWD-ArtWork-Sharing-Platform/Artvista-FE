@@ -146,7 +146,9 @@ const PackageCard: NextPage<PackageCardType> = ({
               </li>
               {packageTime ? (
                 <li className="mb-3">
-                  <p className="lists">Time: {packageTime}</p>
+                  <p className="lists">
+                    Time: {packageTime} {" days"}
+                  </p>
                 </li>
               ) : (
                 <></>

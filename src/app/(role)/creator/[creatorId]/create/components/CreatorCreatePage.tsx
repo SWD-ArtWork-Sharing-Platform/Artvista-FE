@@ -85,7 +85,7 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
       //   });
       var imageUrlFirebase = "";
       if (imageUpload) {
-        const imageRef = ref(firebaseStorage, `artworkImages/${v4()}}`);
+        const imageRef = ref(firebaseStorage, `artworkImages/${v4()}`);
         uploadBytes(imageRef, imageUpload).then((snapshot) => {
           getDownloadURL(snapshot.ref)
             .then((url) => {
