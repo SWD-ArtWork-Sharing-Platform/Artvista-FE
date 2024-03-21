@@ -6,5 +6,6 @@ export interface PackageDTO {
     maximumArtworks?: number;
     price?: number;
     discount?: number;
-    packageOfCreatorDTOs?: PackageOfCreatorDTO[];
+    packageTime?: string;
+    // packageOfCreatorDTOs?: PackageOfCreatorDTO[];
 }

@@ -17,7 +17,7 @@ const Artwork: React.FC = () => {
     artworkName: "",
     price: 0,
     discount: 0,
-    status: "Active",
+    status: "",
   });
 
   const [deleteArtwork, setDeleteArtwork] = useState<ArtworkDTO | undefined>(

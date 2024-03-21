@@ -37,7 +37,7 @@ export class CategoryService {
         }
     }
 
-    static async createNewCategory(category: CategoryDTO): Promise<ResponseDTO<any>> {
+    static async createNewCategory(category: CategoryDTO): Promise<ResponseDTO<CategoryDTO>> {
         try {
             const response = await CategoryService.axiosInstance.post<ResponseDTO<any>>(`${API_BASE_URL}/api/category/CreateCategory`, category);
             return response.data.result;
@@ -47,7 +47,7 @@ export class CategoryService {
         }
     }
 
-    static async updateCategory(category: CategoryDTO): Promise<ResponseDTO<any>> {
+    static async updateCategory(category: CategoryDTO): Promise<ResponseDTO<CategoryDTO>> {
         try {
             const response = await CategoryService.axiosInstance.put<ResponseDTO<any>>(`${API_BASE_URL}/api/category/UpdateCategory`, category);
             return response.data.result;
@@ -57,7 +57,7 @@ export class CategoryService {
         }
     }
 
-    static async deleteCategoryByID(id: string): Promise<ResponseDTO<any>> {
+    static async deleteCategoryByID(id: string): Promise<ResponseDTO<CategoryDTO>> {
         try {
             const response = await CategoryService.axiosInstance.delete<ResponseDTO<any>>(`${API_BASE_URL}/api/category/DeleteCategory?categoryId=${id}`);
             return response.data.result;

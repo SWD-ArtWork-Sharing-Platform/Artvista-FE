@@ -6,4 +6,14 @@ export interface CategoryDTO {
     type?: string;
     quantity?: number;
     note?: string;
+    // artworkId?: string;
+    // artworkName?: string;
+    // price?: number;
+    // discount?: number;
+    // status?: string;
+    // id?: string;
+    // categoryId?: string;
+    // imageUrl?: string;
+    // fPosts?: [];
+    // fReports?: []
 }
