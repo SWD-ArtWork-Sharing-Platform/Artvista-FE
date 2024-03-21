@@ -68,13 +68,13 @@ const ArtworkCard: NextPage<Cards1Type> = ({
       event.preventDefault();
     };
 
-    // document.addEventListener("keydown", preventF12Key);
-    // document.addEventListener("contextmenu", preventContextMenu);
+    document.addEventListener("keydown", preventF12Key);
+    document.addEventListener("contextmenu", preventContextMenu);
 
-    // return () => {
-    //   document.removeEventListener("keydown", preventF12Key);
-    //   document.removeEventListener("contextmenu", preventContextMenu);
-    // };
+    return () => {
+      document.removeEventListener("keydown", preventF12Key);
+      document.removeEventListener("contextmenu", preventContextMenu);
+    };
   }, []);
 
   return (

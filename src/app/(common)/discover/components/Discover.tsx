@@ -410,7 +410,11 @@ const Discover: NextPage<DiscoverType> = ({
                     <ArtworkCard
                       key={index}
                       artworkId={artwork.artworkId}
-                      maskGroup={artwork.imageUrl.split("://example")[0]}
+                      maskGroup={
+                        artwork.imageUrl
+                          ? artwork.imageUrl.split("://example")[0]
+                          : ""
+                      }
                       artworkName={artwork.artworkName}
                       creatorkName={artwork.creator.name}
                       creatorId={artwork.creator.id}

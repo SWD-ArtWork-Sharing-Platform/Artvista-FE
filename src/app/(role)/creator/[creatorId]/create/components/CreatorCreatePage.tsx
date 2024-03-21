@@ -16,10 +16,10 @@ import { ArtworkDTO } from "@/types/market/ArtworkDTO";
 import artworkMarketApi from "@/api/market/artwork";
 import Loading from "@/components/Loading/Loading";
 import axios from "axios";
-import postManagementApi from "@/api/management/post";
-import sweetAlert from "@/utils/sweetAlert";
-import Swal from "sweetalert2";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { firebaseStorage } from "@/config/firebaseConfig";
 import { v4 } from "uuid";
+import Swal from "sweetalert2";
 
 export type CreatorCreateType = {
   editMode?: boolean;
@@ -83,82 +83,54 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
       //   .catch((err) => {
       //     console.log(err);
       //   });
-      values.artworkId = v4();
-      const formData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
-        if (key === "image" && value) {
-          formData.append(key, value as File);
-        } else {
-          formData.append(key, (value ?? "").toString());
-        }
-      });
+      var imageUrlFirebase = "";
+      if (imageUpload) {
+        const imageRef = ref(firebaseStorage, `artworkImages/${v4()}}`);
+        uploadBytes(imageRef, imageUpload).then((snapshot) => {
+          getDownloadURL(snapshot.ref)
+            .then((url) => {
+              imageUrlFirebase = url;
+            })
+            .finally(async () => {
+              values.imageUrl = imageUrlFirebase;
 
-      enableLoading();
-      await artworkManagementApi
-        .createArtwork(formData)
-        .then((response) => {
-          console.log(response);
-          if (
-            response.data.isSuccess &&
-            response.data.result &&
-            response.data.result.isSuccess &&
-            response.data.result.result
-          ) {
-            postManagementApi
-              .createNewPost(response.data.result.result, values.description)
-              .then((response) => {
-                console.log(response);
-              })
-              .catch((err) => {
-                console.log(err);
-              })
-              .finally(() => {
-                disableLoading();
-                Swal.fire({
-                  icon: "success",
-                  title: `Upload New Art Successfully`,
-                  timerProgressBar: true,
-                  showCancelButton: false,
-                  showConfirmButton: true,
-                  confirmButtonText: "Click here to show your showcase",
-                  showLoaderOnConfirm: true,
-                  allowOutsideClick: false,
-                }).then((result) => {
-                  router.push(PATH_SHOP.creator.visitPage(creatorId));
-                });
+              const formData = new FormData();
+              Object.entries(values).forEach(([key, value]) => {
+                if (key === "image" && value) {
+                  formData.append(key, value as File);
+                } else {
+                  formData.append(key, (value ?? "").toString());
+                }
               });
-          } else {
-            disableLoading();
 
-            Swal.fire({
-              icon: "info",
-              title: `Upload New Art Failed`,
-              html: "Something went wrong.</br>We are so sorry.</br> Please try again later.",
-              timerProgressBar: true,
-              showCancelButton: false,
-              showConfirmButton: true,
-              confirmButtonText: "OK",
-              showLoaderOnConfirm: true,
-              allowOutsideClick: false,
+              await artworkManagementApi
+                .createArtwork(formData)
+                .then((res) => {
+                  console.log(res);
+                  if (res.data.isSuccess) {
+                    Swal.fire({
+                      icon: "info",
+                      title: `Create Artwork Successfully`,
+                      html: `Let's return to see your showcase now`,
+                      timerProgressBar: true,
+                      showCancelButton: false,
+                      showConfirmButton: true,
+                      confirmButtonText: "Click here to continue",
+                      showLoaderOnConfirm: true,
+                      allowOutsideClick: false,
+                    })
+                      .then((result) => {
+                        router.push(PATH_SHOP.creator.visitPage(creatorId));
+                      })
+                      .catch((err) => {});
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
             });
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          disableLoading();
-          Swal.fire({
-            icon: "info",
-            title: `Upload New Art Failed`,
-            html: "Something went wrong.</br>We are so sorry.</br> Please try again later.",
-            timerProgressBar: true,
-            showCancelButton: false,
-            showConfirmButton: true,
-            confirmButtonText: "OK",
-            showLoaderOnConfirm: true,
-            allowOutsideClick: false,
-          });
-        })
-        .finally(() => {});
+        });
+      }
     },
   });
 
@@ -177,9 +149,7 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
       .catch((error) => {
         console.log(error);
       })
-      .finally(() => {
-        disableLoading();
-      });
+      .finally(() => {});
   };
 
   const renderArtworkDetail = () => {
@@ -246,7 +216,6 @@ const CreatorCreatePage: NextPage<CreatorCreateType> = ({ editMode }) => {
       ) : (
         <></>
       )}
-      <Loading loading={isLoading} />
       <TitlePageFrame
         title={`${!editMode ? "Upload Your Art" : "Edit Your Art"}`}
         subtitle={`${!editMode ? "Upload the artwork you want to sell" : "Edit your existing artwork now"}`}

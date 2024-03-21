@@ -325,7 +325,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       name,
-      parsedPhone,
+      phoneNumber: parsedPhone,
       role,
       address,
     });
@@ -334,7 +334,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       name,
-      parsedPhone,
+      phoneNumber: parsedPhone,
       role,
       address,
     });
@@ -347,7 +347,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
           password,
         })
       );
-      assignRole(email, password, name, phoneNumber, role, address);
+      assignRole(email, password, name, parsedPhone, role, address);
       disableLoading();
       router.push(PATH_AUTH.signupInfo);
     }

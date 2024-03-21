@@ -89,24 +89,6 @@ const ArtworkDetail = (props: {}) => {
       .catch((error) => {
         console.log(error);
       });
-    // artworkManagementApi
-    //   .getAllArtwork()
-    //   .then((response) => {
-    //     if (
-    //       response.data.isSuccess &&
-    //       response.data.result &&
-    //       response.data.result.isSuccess
-    //     ) {
-    //       setArtworkDetail(
-    //         response.data.result.result.filter(
-    //           (artwork: ArtworkDTO) => artwork.artworkId == artworkId
-    //         )[0]
-    //       );
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
   };
 
   const renderCategory = () => {
