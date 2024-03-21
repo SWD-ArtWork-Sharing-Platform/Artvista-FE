@@ -37,7 +37,7 @@ export class PostService {
         }
     }
 
-    static async createNewPost(post: PostDTO): Promise<ResponseDTO<any>> {
+    static async createNewPost(post: PostDTO): Promise<ResponseDTO<PostDTO>> {
         try {
             const response = await PostService.axiosInstance.post<ResponseDTO<any>>(`${API_BASE_URL}/api/post/CreateNewPost`, post);
             return response.data.result;

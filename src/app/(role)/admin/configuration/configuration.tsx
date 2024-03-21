@@ -18,11 +18,11 @@ const Home: React.FC = () => {
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newConfiguration, setNewConfiguration] = useState<ConfigurationDTO>({
+    configurationId: "",
     commisionFee: 0,
-    appliedDate: "2024-02-28T00:00:00",
-    status: "Active",
-    configurationId: "string",
-    id: "string",
+    appliedDate: "",
+    status: "",
+    id: "",
   });
 
   const [deleteConfiguration, setDeleteConfiguration] = useState<
@@ -100,8 +100,7 @@ const Home: React.FC = () => {
 
   const handleAdd = async () => {
     try {
-      const response =
-        await ConfigurationService.createNewConfiguration(newConfiguration);
+      const response = await ConfigurationService.createNewConfiguration(newConfiguration);
       if (response.isSuccess) {
         setAddModalOpen(false);
         setShowToast(true);
@@ -124,8 +123,7 @@ const Home: React.FC = () => {
   const handleDelete = async () => {
     try {
       const response = await ConfigurationService.deleteConfigurationByID(
-        deleteConfiguration?.id ?? "",
-        true
+        deleteConfiguration?.configurationId ?? ""
       );
       if (response.isSuccess) {
         fetchConfigurations();

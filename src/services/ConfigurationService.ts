@@ -37,7 +37,7 @@ export class ConfigurationService {
         }
     }
 
-    static async createNewConfiguration(configuration: ConfigurationDTO): Promise<ResponseDTO<any>> {
+    static async createNewConfiguration(configuration: ConfigurationDTO): Promise<ResponseDTO<ConfigurationDTO>> {
         try {
             const response = await ConfigurationService.axiosInstance.post<ResponseDTO<any>>(`${API_BASE_URL}/api/configuration/CreateNewConfiguration`, configuration);
             return response.data.result;
@@ -47,7 +47,7 @@ export class ConfigurationService {
         }
     }
 
-    static async updateConfiguration(configuration: ConfigurationDTO): Promise<ResponseDTO<any>> {
+    static async updateConfiguration(configuration: ConfigurationDTO): Promise<ResponseDTO<ConfigurationDTO>> {
         try {
             const response = await ConfigurationService.axiosInstance.put<ResponseDTO<any>>(`${API_BASE_URL}/api/configuration/UpdateConfiguration`, configuration);
             return response.data.result;
@@ -57,7 +57,7 @@ export class ConfigurationService {
         }
     }
 
-    static async deleteConfigurationByID(id: string, confirm: boolean): Promise<ResponseDTO<any>> {
+    static async deleteConfigurationByID(id: string): Promise<ResponseDTO<ConfigurationDTO>> {
         try {
             const response = await ConfigurationService.axiosInstance.delete<ResponseDTO<any>>(`${API_BASE_URL}/api/configuration/DeleteConfigurationByID?id=${id}&confirm=${confirm}`);
             return response.data.result;

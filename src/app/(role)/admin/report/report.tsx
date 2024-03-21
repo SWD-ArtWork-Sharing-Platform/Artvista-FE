@@ -1,148 +1,160 @@
-import { useEffect, useState } from "react";
-import { ConfigurationDTO } from "@/models/ConfigurationDTO";
-import { ConfigurationService } from "@/services/ConfigurationService";
+import React, { useEffect, useState } from "react";
+import { PackageDTO } from "@/models/PackageDTO";
+import { PackageService } from "@/services/PackageService";
 import Layout from "@/components/Layout";
 import { Modal, Button, Toast } from "react-bootstrap";
 import Guard from "@/components/Guard";
+import { error } from "console";
+import { ReportDTO } from "@/models/ReportDTO";
+import { ReportService } from "@/services/ReportService";
 
-const Home: React.FC = () => {
-  const [configurations, setConfigurations] = useState<ConfigurationDTO[]>([]);
-  const [currentConfigurations, setCurrentConfigurations] = useState<
-    ConfigurationDTO[]
-  >([]);
+const Report: React.FC = () => {
+  // State for packages
+  const [reports, setReports] = useState<ReportDTO[]>([]);
+  const [currentReports, setCurrentReports] = useState<ReportDTO[]>([]);
 
-  const [editedConfiguration, setEditedConfiguration] = useState<
-    Partial<ConfigurationDTO>
-  >({});
+  // State for editing package
+  const [editedReport, setEditedReport] = useState<Partial<ReportDTO>>({});
   const [editModalOpen, setEditModalOpen] = useState(false);
 
+  // State for adding new package
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [newConfiguration, setNewConfiguration] = useState<ConfigurationDTO>({
-    commisionFee: 0,
-    appliedDate: "2024-02-28T00:00:00",
-    status: "Active",
-    configurationId: "string",
-    id: "string",
+  const [newReport, setNewReport] = useState<ReportDTO>({
+    reportId: "",
+    createdOn: "",
+    createdBy: "",
+    artworkId: "",
+    status: "",
+    detail: "",
+    id: "",
+    actionNote: "",
+    // report: ReportDTO;
   });
 
-  const [deleteConfiguration, setDeleteConfiguration] = useState<
-    ConfigurationDTO | undefined
-  >(undefined);
+  // State for deleting package
+  const [deleteReport, setDeleteReport] = useState<ReportDTO | undefined>(
+    undefined
+  );
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false);
 
+  // State for toast notifications
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState<"success" | "danger">(
     "success"
   );
 
+  // State for pagination
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
 
+  // Fetch packages on component mount
   useEffect(() => {
-    fetchConfigurations();
+    fetchReports();
   }, []);
 
   useEffect(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    setCurrentConfigurations(
-      configurations.slice(indexOfFirstItem, indexOfLastItem)
-    );
+    setCurrentReports(reports.slice(indexOfFirstItem, indexOfLastItem));
   }, [currentPage]);
 
-  const fetchConfigurations = async () => {
+  // Fetch packages from the API
+  const fetchReports = async () => {
     try {
-      // Fetch configurations from API
-      const response = await ConfigurationService.getAllConfigurations();
+      const response = await ReportService.;
       if (response.isSuccess && Array.isArray(response.result)) {
-        setConfigurations(response.result);
+        setReports(response.result);
         setTotalPages(Math.ceil(response.result.length / itemsPerPage));
         setCurrentPage(1);
       } else {
         console.error("Invalid response format:", response);
       }
     } catch (error) {
-      console.error("Error fetching configurations:", error);
+      console.error("Error fetching packages:", error);
     }
   };
 
-  const handleEdit = (configuration: ConfigurationDTO) => {
-    setEditedConfiguration(configuration);
+  // Handle opening edit modal for package
+  const handleEdit = (pkg: PackageDTO) => {
+    setEditedReport(pkg);
     setEditModalOpen(true);
   };
 
+  // Handle saving edited package
   const handleSave = async () => {
     try {
-      const response = await ConfigurationService.updateConfiguration(
-        editedConfiguration as ConfigurationDTO
+      const response = await PackageService.updatePackage(
+        editedReport as PackageDTO
       );
       if (response.isSuccess) {
-        fetchConfigurations();
+        response.isSuccess;
+        fetchReports();
         setEditModalOpen(false);
         setShowToast(true);
-        setToastMessage("Configuration updated successfully");
+        setToastMessage("Package updated successfully");
         setToastVariant("success");
       } else {
-        console.error("Error updating configuration:", response.message);
+        console.error("Error updating package:", response.message);
         setShowToast(true);
-        setToastMessage(response.message || "Failed to update configuration");
+        setToastMessage("Failed to update package");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error updating configuration:", error);
+      console.error("Error updating package:", error);
       setShowToast(true);
-      setToastMessage("Failed to update configuration");
+      setToastMessage("Failed to update package");
       setToastVariant("danger");
     }
   };
 
+  // Handle adding new package
   const handleAdd = async () => {
     try {
-      const response =
-        await ConfigurationService.createNewConfiguration(newConfiguration);
+      const response = await PackageService.createNewPackage(newReport);
       if (response.isSuccess) {
         setAddModalOpen(false);
         setShowToast(true);
-        setToastMessage("Configuration added successfully");
+        setToastMessage("Package added successfully");
         setToastVariant("success");
       } else {
-        console.error("Error adding configuration:", response.message);
+        console.error("Error adding package:", response.message);
         setShowToast(true);
-        setToastMessage(response.message || "Failed to add configuration");
+        setToastMessage("Failed to add package");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error adding configuration:", error);
+      console.error("Error adding package:", error);
       setShowToast(true);
-      setToastMessage("Failed to add configuration");
+      setToastMessage("Failed to add package");
       setToastVariant("danger");
     }
   };
 
+  // Handle deleting package
   const handleDelete = async () => {
     try {
-      const response = await ConfigurationService.deleteConfigurationByID(
-        deleteConfiguration?.id ?? "",
+      const response = await PackageService.deletePackageByID(
+        deleteReport?.packageId ?? "",
         true
       );
       if (response.isSuccess) {
-        fetchConfigurations();
+        fetchReports();
         setConfirmDeleteModalOpen(false);
         setShowToast(true);
-        setToastMessage("Configuration deleted successfully");
+        setToastMessage("Package deleted successfully");
         setToastVariant("success");
       } else {
-        console.error("Error deleting configuration:", response.message);
+        console.error("Error deleting package:", response.message);
         setShowToast(true);
-        setToastMessage(response.message || "Failed to delete configuration");
+        setToastMessage("Failed to delete package");
         setToastVariant("danger");
       }
     } catch (error) {
-      console.error("Error deleting configuration:", error);
+      console.error("Error deleting package:", error);
       setShowToast(true);
-      setToastMessage("Failed to delete configuration");
+      setToastMessage("Failed to delete package");
       setToastVariant("danger");
     }
   };
@@ -150,7 +162,7 @@ const Home: React.FC = () => {
   return (
     <Layout>
       <div className="container mt-5">
-        <h1 className="mb-4">Configuration Page</h1>
+        <h1 className="mb-4">Package Page</h1>
         <button
           type="button"
           className="btn btn-primary mt-1 mb-3"
@@ -162,24 +174,26 @@ const Home: React.FC = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Commission Fee</th>
-              <th>Applied Date</th>
-              <th>Status</th>
+              <th>Package Name</th>
+              <th>Maximum Artworks</th>
+              <th>Price</th>
+              <th>Discount</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {currentConfigurations.map((config) => (
-              <tr key={config.configurationId}>
-                <td>{config.configurationId}</td>
-                <td>{config.commisionFee}</td>
-                <td>{config.appliedDate}</td>
-                <td>{config.status}</td>
+            {currentReports.map((pkg) => (
+              <tr key={pkg.packageId}>
+                <td>{pkg.packageId}</td>
+                <td>{pkg.packageName}</td>
+                <td>{pkg.maximumArtworks}</td>
+                <td>{pkg.price}</td>
+                <td>{pkg.discount}</td>
                 <td>
                   <button
                     type="button"
                     className="btn btn-primary"
-                    onClick={() => handleEdit(config)}
+                    onClick={() => handleEdit(pkg)}
                   >
                     Edit
                   </button>
@@ -187,7 +201,7 @@ const Home: React.FC = () => {
                     type="button"
                     className="btn btn-danger ms-2"
                     onClick={() => {
-                      setDeleteConfiguration(config);
+                      setDeleteReport(pkg);
                       setConfirmDeleteModalOpen(true);
                     }}
                   >
@@ -256,62 +270,92 @@ const Home: React.FC = () => {
       {/* Bootstrap Modal for Editing */}
       <Modal show={editModalOpen} onHide={() => setEditModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Configuration</Modal.Title>
+          <Modal.Title>Edit Package</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for editing */}
           <div className="mb-3">
-            <label htmlFor="commissionFee" className="form-label">
-              Commission Fee
+            <label htmlFor="packageId" className="form-label">
+              Package ID
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="packageId"
+              value={editedReport.packageId}
+              onChange={(e) =>
+                setEditedReport({ ...editedReport, packageId: e.target.value })
+              }
+              readOnly
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="packageName" className="form-label">
+              Package Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="packageName"
+              value={editedReport.packageName}
+              onChange={(e) =>
+                setEditedReport({
+                  ...editedReport,
+                  packageName: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="maximumArtworks" className="form-label">
+              Maximum Artworks
             </label>
             <input
               type="number"
               className="form-control"
-              id="commissionFee"
-              value={editedConfiguration.commisionFee}
+              id="maximumArtworks"
+              value={editedReport.maximumArtworks}
               onChange={(e) =>
-                setEditedConfiguration({
-                  ...editedConfiguration,
-                  commisionFee: parseInt(e.target.value),
+                setEditedReport({
+                  ...editedReport,
+                  maximumArtworks: parseInt(e.target.value),
                 })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="appliedDate" className="form-label">
-              Applied Date
+            <label htmlFor="price" className="form-label">
+              Price
             </label>
             <input
-              type="date"
+              type="number"
               className="form-control"
-              id="appliedDate"
-              value={editedConfiguration.appliedDate}
+              id="price"
+              value={editedReport.price}
               onChange={(e) =>
-                setEditedConfiguration({
-                  ...editedConfiguration,
-                  appliedDate: e.target.value,
+                setEditedReport({
+                  ...editedReport,
+                  price: parseFloat(e.target.value),
                 })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="status" className="form-label">
-              Status
+            <label htmlFor="discount" className="form-label">
+              Discount
             </label>
-            <select
-              className="form-select"
-              id="status"
-              value={editedConfiguration.status}
+            <input
+              type="number"
+              className="form-control"
+              id="discount"
+              value={editedReport.discount}
               onChange={(e) =>
-                setEditedConfiguration({
-                  ...editedConfiguration,
-                  status: e.target.value,
+                setEditedReport({
+                  ...editedReport,
+                  discount: parseFloat(e.target.value),
                 })
               }
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+            />
           </div>
           {/* Add other form fields here */}
         </Modal.Body>
@@ -328,62 +372,74 @@ const Home: React.FC = () => {
       {/* Bootstrap Modal for Adding */}
       <Modal show={addModalOpen} onHide={() => setAddModalOpen(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Configuration</Modal.Title>
+          <Modal.Title>Add Package</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Form fields for adding */}
           <div className="mb-3">
-            <label htmlFor="commissionFee" className="form-label">
-              Commission Fee
+            <label htmlFor="packageName" className="form-label">
+              Package Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="packageName"
+              value={newReport.packageName}
+              onChange={(e) =>
+                setNewReport({ ...newReport, packageName: e.target.value })
+              }
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="maximumArtworks" className="form-label">
+              Maximum Artworks
             </label>
             <input
               type="number"
               className="form-control"
-              id="commissionFee"
-              value={newConfiguration.commisionFee}
+              id="maximumArtworks"
+              value={newReport.maximumArtworks}
               onChange={(e) =>
-                setNewConfiguration({
-                  ...newConfiguration,
-                  commisionFee: parseInt(e.target.value),
+                setNewReport({
+                  ...newReport,
+                  maximumArtworks: parseInt(e.target.value),
                 })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="appliedDate" className="form-label">
-              Applied Date
+            <label htmlFor="price" className="form-label">
+              Price
             </label>
             <input
-              type="date"
+              type="number"
               className="form-control"
-              id="appliedDate"
-              value={newConfiguration.appliedDate}
+              id="price"
+              value={newReport.price}
               onChange={(e) =>
-                setNewConfiguration({
-                  ...newConfiguration,
-                  appliedDate: e.target.value,
+                setNewReport({
+                  ...newReport,
+                  price: parseFloat(e.target.value),
                 })
               }
             />
           </div>
           <div className="mb-3">
-            <label htmlFor="status" className="form-label">
-              Status
+            <label htmlFor="discount" className="form-label">
+              Discount
             </label>
-            <select
-              className="form-select"
-              id="status"
-              value={newConfiguration.status}
+            <input
+              type="number"
+              className="form-control"
+              id="discount"
+              value={newReport.discount}
               onChange={(e) =>
-                setNewConfiguration({
-                  ...newConfiguration,
-                  status: e.target.value,
+                setNewReport({
+                  ...newReport,
+                  discount: parseFloat(e.target.value),
                 })
               }
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+            />
           </div>
           {/* Add other form fields here */}
         </Modal.Body>
@@ -392,7 +448,7 @@ const Home: React.FC = () => {
             Close
           </Button>
           <Button variant="primary" onClick={handleAdd}>
-            Add Configuration
+            Add Package
           </Button>
         </Modal.Footer>
       </Modal>
@@ -405,9 +461,7 @@ const Home: React.FC = () => {
         <Modal.Header closeButton>
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete this configuration?
-        </Modal.Body>
+        <Modal.Body>Are you sure you want to delete this package?</Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
@@ -449,4 +503,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Guard(Home);
+export default Guard(Report);

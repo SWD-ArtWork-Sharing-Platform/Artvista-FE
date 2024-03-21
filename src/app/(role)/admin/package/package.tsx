@@ -4,6 +4,7 @@ import { PackageService } from '@/services/PackageService';
 import Layout from '@/components/Layout';
 import { Modal, Button, Toast } from 'react-bootstrap';
 import Guard from '@/components/Guard';
+import { error } from 'console';
 
 const Package: React.FC = () => {
     // State for packages
@@ -17,10 +18,12 @@ const Package: React.FC = () => {
     // State for adding new package
     const [addModalOpen, setAddModalOpen] = useState(false);
     const [newPackage, setNewPackage] = useState<PackageDTO>({
+        packageId: '',
         packageName: '',
         maximumArtworks: 0,
         price: 0,
         discount: 0,
+        packageTime: ''
     });
 
     // State for deleting package
@@ -76,6 +79,7 @@ const Package: React.FC = () => {
         try {
             const response = await PackageService.updatePackage(editedPackage as PackageDTO);
             if (response.isSuccess) {
+                response.isSuccess;
                 fetchPackages();
                 setEditModalOpen(false);
                 setShowToast(true);
