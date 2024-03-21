@@ -136,7 +136,7 @@ const Interaction: React.FC = () => {
         <Layout>
             <div className="container mt-5">
                 <h1 className="mb-4">Interaction Page</h1>
-                <button type="button" className="btn btn-primary mt-1 mb-3" onClick={() => setAddModalOpen(true)}>Add</button>
+                <button type="button" className="btn btn-primary mt-1 mb-3" onClick={() => setAddModalOpen(true)} style={{ visibility: 'hidden' }}>Add</button>
                 <table className="table">
                     <thead>
                         <tr>
@@ -155,7 +155,7 @@ const Interaction: React.FC = () => {
                                 <td>{interaction.comments}</td>
                                 <td>{interaction.postId}</td>
                                 <td>
-                                    <button type="button" className="btn btn-primary" onClick={() => handleEdit(interaction)}>Edit</button>
+                                    <button type="button" className="btn btn-primary" onClick={() => handleEdit(interaction)} style={{ visibility: 'hidden' }}>Edit</button>
                                     <button type="button" className="btn btn-danger ms-2" onClick={() => { setDeleteInteraction(interaction); setConfirmDeleteModalOpen(true); }}>Delete</button>
                                 </td>
                             </tr>
@@ -243,7 +243,7 @@ const Interaction: React.FC = () => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setAddModalOpen(false)}>Close</Button>
-                    <Button variant="primary" onClick={handleAdd}>Add Interaction</Button>
+                    <Button variant="primary" onClick={handleAdd} style={{ visibility: 'hidden' }}>Add Interaction</Button>
                 </Modal.Footer>
             </Modal>
 
